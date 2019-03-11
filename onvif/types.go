@@ -1137,7 +1137,20 @@ type SystemDateTime struct {
 	Extension       SystemDateTimeExtension
 }
 
-func (d *DateTime) GetTime() time.Time {
+func (d *SystemDateTime) GetUTCTime() (time.Time, error) {
+	if d.UTCDateTime != nil {
+		return d.UTCDateTime.getTime(), nil
+	}
+
+	tz, err := ParsePosixTimezone(string(d.TimeZone.TZ))
+	if err != nil {
+		return time.Now().UTC(), err
+	}
+
+	return tz.LocalToUTC(d.LocalDateTime.getTime()), nil
+}
+
+func (d *DateTime) getTime() time.Time {
 	return time.Date(
 		d.Date.Year, time.Month(d.Date.Month), d.Date.Day,
 		d.Time.Hour, d.Time.Minute, d.Time.Second, 0,
