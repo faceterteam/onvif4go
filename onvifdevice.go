@@ -63,12 +63,12 @@ func (onvifDevice *OnvifDevice) Initialize() error {
 
 	currentTime := time.Now().UTC()
 	systemDateAndTimeResponse, err := deviceService.GetSystemDateAndTime()
-	if err != nil {
-		return err
+	if err == nil {
+		//TODO: warn if GetSystemDateAndTime return err
+		deviceTime, _ := systemDateAndTimeResponse.SystemDateAndTime.GetUTCTime()
+		//TODO: error mean parse error of Timezone. deviceTime equal time.Now().UTC()
+		onvifDevice.auth.timeDiff = deviceTime.Sub(currentTime)
 	}
-	//TODO: error mean parse error of Timezone. deviceTime equal time.Now().UTC()
-	deviceTime, _ := systemDateAndTimeResponse.SystemDateAndTime.GetUTCTime()
-	onvifDevice.auth.timeDiff = deviceTime.Sub(currentTime)
 
 	capabilitiesResponse, err := deviceService.GetCapabilities()
 	if err != nil {
