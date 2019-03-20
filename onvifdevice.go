@@ -62,7 +62,7 @@ func (onvifDevice *OnvifDevice) Initialize() error {
 	deviceService := NewDeviceService(onvifDevice)
 
 	currentTime := time.Now().UTC()
-	systemDateAndTimeResponse, err := deviceService.GetSystemDateAndTime()
+	systemDateAndTimeResponse, err := deviceService.WithoutAuth().GetSystemDateAndTime()
 	if err == nil {
 		//TODO: warn if GetSystemDateAndTime return err
 		deviceTime, _ := systemDateAndTimeResponse.SystemDateAndTime.GetUTCTime()

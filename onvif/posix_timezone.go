@@ -223,6 +223,12 @@ func parsePosixTimezoneTime(t *posixTimezoneTime, timePart string) error {
 	switch state {
 	case weekend:
 		t.Weekday, err = strconv.Atoi(timePart[start:])
+	case hours:
+		t.Hours, err = strconv.Atoi(timePart[start:])
+		t.Minutes, t.Seconds = 0, 0
+	case minutes:
+		t.Minutes, err = strconv.Atoi(timePart[start:])
+		t.Seconds = 0
 	case seconds:
 		t.Seconds, err = strconv.Atoi(timePart[start:])
 	}

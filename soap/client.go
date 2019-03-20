@@ -43,6 +43,8 @@ func (soap *SoapClient) Do(request, response interface{}, headers ...interface{}
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK &&
 		resp.StatusCode != http.StatusInternalServerError &&
 		resp.StatusCode != http.StatusBadRequest {

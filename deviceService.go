@@ -17,6 +17,12 @@ func NewDeviceService(onvifDevice *OnvifDevice) *DeviceService {
 	}
 }
 
+func (s *DeviceService) WithoutAuth() *DeviceService {
+	return &DeviceService{
+		Client: s.Client.WithoutAuth(),
+	}
+}
+
 // GetDeviceInformation gets basic device information from the device.
 func (s *DeviceService) GetDeviceInformation() (res tds.GetDeviceInformationResponse, err error) {
 	err = s.Client.Call(tds.GetDeviceInformation{}, &res)
@@ -38,7 +44,7 @@ func (s *DeviceService) GetServices(includeCapability bool) (res tds.GetServices
 //
 // A device shall provide the UTCDateTime information.
 func (s *DeviceService) GetSystemDateAndTime() (res tds.GetSystemDateAndTimeResponse, err error) {
-	err = s.Client.CallWithoutAuth(tds.GetSystemDateAndTime{}, &res)
+	err = s.Client.Call(tds.GetSystemDateAndTime{}, &res)
 	return
 }
 

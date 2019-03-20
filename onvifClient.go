@@ -9,7 +9,7 @@ import (
 type onvifCaller interface {
 	Call(request, response interface{}) error
 
-	CallWithoutAuth(request, response interface{}) error
+	WithoutAuth() onvifCaller
 }
 
 type onvifAuth struct {
@@ -30,8 +30,8 @@ func NewOnvifClient(endpoint string, auth *onvifAuth) *onvifClient {
 	}
 }
 
-func (c *onvifClient) callOnInternal(request, response interface{}, useAuth bool) error {
-	if c.auth.login != "" && useAuth {
+func (c *onvifClient) Call(request, response interface{}) error {
+	if c.auth.login != "" {
 		return c.soapClient.Do(request, response,
 			soap.MakeWSSecurity(c.auth.login, c.auth.password, c.auth.timeDiff))
 	}
@@ -39,10 +39,9 @@ func (c *onvifClient) callOnInternal(request, response interface{}, useAuth bool
 	return c.soapClient.Do(request, response)
 }
 
-func (c *onvifClient) Call(request, response interface{}) error {
-	return c.callOnInternal(request, response, true)
-}
-
-func (c *onvifClient) CallWithoutAuth(request, response interface{}) error {
-	return c.callOnInternal(request, response, false)
+func (c *onvifClient) WithoutAuth() onvifCaller {
+	return &onvifClient{
+		soapClient: c.soapClient,
+		auth:       &onvifAuth{},
+	}
 }
