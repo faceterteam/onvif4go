@@ -69,6 +69,33 @@ func (s *DeviceService) GetCapabilities(categories ...string) (res tds.GetCapabi
 }
 
 /*
+GetScopes requests the scope parameters of a device. The scope parameters are used in
+the device discovery to match a probe message, see Section 7. The Scope parameters are of
+two different types:
+	- Fixed
+	- Configurable
+Fixed scope parameters are permanent device characteristics and cannot be removed through
+the device management interface. The scope type is indicated in the scope list returned
+in the get scope parameters response. A device shall support retrieval of discovery scope
+parameters through the GetScopes command. As some scope parameters are mandatory,
+the device shall return a non-empty scope list in the response.
+*/
+func (s *DeviceService) GetScopes() (res tds.GetScopesResponse, err error) {
+	err = s.Client.Call(tds.GetScopes{}, &res)
+	return
+}
+
+/*
+GetUsers lists the registered users and corresponding credentials on a device.
+The device shall support retrieval of registered device users and their credentials
+for the user token through the GetUsers command.
+*/
+func (s *DeviceService) GetUsers() (res tds.GetUsersResponse, err error) {
+	err = s.Client.Call(tds.GetUsers{}, &res)
+	return
+}
+
+/*
 <wsdl:operation name="SetSystemDateAndTime">
 	<wsdl:documentation>This operation sets the device system date and time. The device shall support the
 		configuration of the daylight saving setting and of the manual system date and time (if
@@ -126,20 +153,6 @@ func (s *DeviceService) GetCapabilities(categories ...string) (res tds.GetCapabi
 	<wsdl:documentation>This operation gets arbitary device diagnostics information from the device.</wsdl:documentation>
 	<wsdl:input message="tds:GetSystemSupportInformationRequest"/>
 	<wsdl:output message="tds:GetSystemSupportInformationResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetScopes">
-	<wsdl:documentation>This operation requests the scope parameters of a device. The scope parameters are used in
-		the device discovery to match a probe message, see Section 7. The Scope parameters are of
-		two different types: <ul>
-			<li>Fixed</li>
-			<li>Configurable</li>
-		</ul>
-		Fixed scope parameters are permanent device characteristics and cannot be removed through the device management interface.
-		The scope type is indicated in the scope list returned in the get scope parameters response. A device shall support
-		retrieval of discovery scope parameters through the GetScopes command. As some scope parameters are mandatory,
-		the device shall return a non-empty scope list in the response.</wsdl:documentation>
-	<wsdl:input message="tds:GetScopesRequest"/>
-	<wsdl:output message="tds:GetScopesResponse"/>
 </wsdl:operation>
 <wsdl:operation name="SetScopes">
 	<wsdl:documentation>This operation sets the scope parameters of a device. The scope parameters are used in the
@@ -235,13 +248,6 @@ func (s *DeviceService) GetCapabilities(categories ...string) (res tds.GetCapabi
 		To remove the remote user SetRemoteUser should be called without the RemoteUser parameter.</wsdl:documentation>
 	<wsdl:input message="tds:SetRemoteUserRequest"/>
 	<wsdl:output message="tds:SetRemoteUserResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetUsers">
-	<wsdl:documentation>This operation lists the registered users and corresponding credentials on a device. The
-		device shall support retrieval of registered device users and their credentials for the user
-		token through the GetUsers command.</wsdl:documentation>
-	<wsdl:input message="tds:GetUsersRequest"/>
-	<wsdl:output message="tds:GetUsersResponse"/>
 </wsdl:operation>
 <wsdl:operation name="CreateUsers">
 	<wsdl:documentation>This operation creates new device users and corresponding credentials on a device for authentication purposes.

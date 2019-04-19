@@ -5,20 +5,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
-
-	iso8601 "github.com/yakovlevdmv/Golang-iso8601-duration"
 )
 
 /*
 	TODO: XML SOURCE: https://www.w3.org/2001/05/datatypes.xsd
 */
-
-type AnyType string
 
 type AnySimpleType string
 
@@ -136,81 +131,6 @@ func (tp Decimal) NewDecimal(data string) Decimal {
 }
 
 /*
-	Duration is the [ISO 8601] extended format PnYn MnDTnH nMnS,
-	where nY represents the number of years, nM the number of months,
-	nD the number of days, 'T' is the date/time separator,
-	nH the number of hours, nM the number of minutes and nS the number of seconds.
-	The number of seconds can include decimal digits to arbitrary precision.
-	PnYnMnDTnHnMnS
-
-	Duration has the following ·constraining facets·:
-
-	• pattern
-	• enumeration
-	• whiteSpace
-	• maxInclusive
-	• maxExclusive
-	• minInclusive
-	• minExclusive
-
-	More info: https://www.w3.org/TR/xmlschema-2/#duration
-
-	TODO: process restrictions
-	TODO: Look at time.Duration go type
-*/
-
-type Duration AnySimpleType
-
-/*
-func (d Duration) UnmarshalText(text []byte) error {
-	switch strings.ToLower(string(text)) {
-	default:
-		*s = Unrecognized
-	case "small":
-		*s = Small
-	case "large":
-		*s = Large
-	}
-	return nil
-}
-
-func (d Duration) MarshalText() ([]byte, error) {
-	var name string
-	switch s {
-	default:
-		name = "unrecognized"
-	case Small:
-		name = "small"
-	case Large:
-		name = "large"
-	}
-	return []byte(name), nil
-}
-*/
-
-/*
-	Construct an instance of xsd duration type
-*/
-func (tp Duration) NewDateTime(years, months, days, hours, minutes, seconds string) Duration {
-	i, err := iso8601.NewDuration(
-		years,
-		months,
-		days,
-		hours,
-		minutes,
-		seconds,
-	)
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	//fmt.Println(i.ISO8601Duration())
-
-	return Duration(i.ISO8601Duration())
-}
-
-/*
 	DateTime values may be viewed as objects with integer-valued year, month, day, hour
 	and minute properties, a decimal-valued second property, and a boolean timezoned property.
 
@@ -239,7 +159,7 @@ type DateTime AnySimpleType
 /*
 	Construct an instance of xsd dateTime type
 */
-func (tp DateTime) NewDateTime(time time.Time) DateTime {
+func MakeDateTime(time time.Time) DateTime {
 	return DateTime(time.Format("2002-10-10T12:00:00-05:00"))
 }
 
@@ -601,36 +521,6 @@ func (tp Integer) NewInteger(data int64) Integer {
 	return Integer(data)
 }
 
-type NonPositiveInteger int64
-
-func (tp NonPositiveInteger) NewNonPositiveInteger(data int64) (NonPositiveInteger, error) {
-	if data > 0 {
-		return 0, errors.New("Value must be less or equal to 0")
-	}
-	return NonPositiveInteger(data), nil
-}
-
-type NegativeInteger int64
-
-func (tp NegativeInteger) NewNegativeInteger(data int64) (NegativeInteger, error) {
-	if data >= 0 {
-		return 0, errors.New("Value must be less than 0")
-	}
-	return NegativeInteger(data), nil
-}
-
-type Long int64
-
-func (tp Long) NewLong(data int64) Long {
-	return Long(data)
-}
-
-type Int int32
-
-func (tp Int) NewInt(data int32) Int {
-	return Int(data)
-}
-
 type Short int16
 
 func (tp Short) NewShort(data int16) Short {
@@ -641,15 +531,6 @@ type Byte int8
 
 func (tp Byte) NewByte(data int8) Byte {
 	return Byte(data)
-}
-
-type NonNegativeInteger int64
-
-func (tp NonNegativeInteger) NewNonNegativeInteger(data int64) (NonNegativeInteger, error) {
-	if data > 0 {
-		return 0, errors.New("Value must be more or equal to 0")
-	}
-	return NonNegativeInteger(data), nil
 }
 
 type UnsignedLong uint64

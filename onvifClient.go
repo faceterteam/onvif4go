@@ -10,6 +10,8 @@ type onvifCaller interface {
 	Call(request, response interface{}) error
 
 	WithoutAuth() onvifCaller
+
+	SetLogger(logRequest, logResponse func(message string))
 }
 
 type onvifAuth struct {
@@ -37,6 +39,11 @@ func (c *onvifClient) Call(request, response interface{}) error {
 	}
 
 	return c.soapClient.Do(request, response)
+}
+
+func (c *onvifClient) SetLogger(logRequest, logResponse func(message string)) {
+	c.soapClient.LogRequest = logRequest
+	c.soapClient.LogResponse = logResponse
 }
 
 func (c *onvifClient) WithoutAuth() onvifCaller {

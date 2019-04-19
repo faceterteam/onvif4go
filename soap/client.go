@@ -10,7 +10,9 @@ import (
 )
 
 type SoapClient struct {
-	Endpoint string
+	Endpoint    string
+	LogRequest  func(request string)
+	LogResponse func(response string)
 }
 
 func NewSoapClient(endpoint string) *SoapClient {
@@ -38,6 +40,10 @@ func (soap *SoapClient) Do(request, response interface{}, headers ...interface{}
 		return err
 	}
 
+	if soap.LogRequest != nil {
+		soap.LogRequest(string(message))
+	}
+
 	httpClient := new(http.Client)
 	resp, err := httpClient.Post(soap.Endpoint, "application/soap+xml; charset=utf-8", bytes.NewBuffer(message))
 	if err != nil {
@@ -57,7 +63,10 @@ func (soap *SoapClient) Do(request, response interface{}, headers ...interface{}
 	responseEnvelope := NewSOAPEnvelope(response)
 
 	respBody := readResponse(resp)
-	//fmt.Println(respBody)
+
+	if soap.LogResponse != nil {
+		soap.LogResponse(string(respBody))
+	}
 
 	decoder := xml.NewDecoder(strings.NewReader(respBody))
 	err = decoder.Decode(responseEnvelope)
