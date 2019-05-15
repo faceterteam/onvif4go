@@ -7,7 +7,7 @@ import (
 )
 
 type onvifCaller interface {
-	Call(request, response interface{}) error
+	Call(request, response interface{}, headers ...interface{}) error
 
 	WithoutAuth() onvifCaller
 
@@ -32,13 +32,12 @@ func NewOnvifClient(endpoint string, auth *onvifAuth) *onvifClient {
 	}
 }
 
-func (c *onvifClient) Call(request, response interface{}) error {
+func (c *onvifClient) Call(request, response interface{}, headers ...interface{}) error {
 	if c.auth.login != "" {
-		return c.soapClient.Do(request, response,
-			soap.MakeWSSecurity(c.auth.login, c.auth.password, c.auth.timeDiff))
+		headers = append(headers, soap.MakeWSSecurity(c.auth.login, c.auth.password, c.auth.timeDiff))
 	}
 
-	return c.soapClient.Do(request, response)
+	return c.soapClient.Do(request, response, headers...)
 }
 
 func (c *onvifClient) SetLogger(logRequest, logResponse func(message string)) {

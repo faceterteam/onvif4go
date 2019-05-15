@@ -7,18 +7,25 @@ import (
 type EventsService struct {
 	Client    onvifCaller
 	onvifAuth *onvifAuth
+	endpoint  string
 }
 
 func NewEventsService(endpoint string, onvifAuth *onvifAuth) *EventsService {
 	return &EventsService{
 		Client:    NewOnvifClient(endpoint, onvifAuth),
 		onvifAuth: onvifAuth,
+		endpoint:  endpoint,
 	}
+}
+
+func (s *EventsService) makeAddressingHeaders(action string) []interface{} {
+	return tev.MakeAnonymousAddressingHeaders(action, s.endpoint)
 }
 
 // GetServiceCapabilities returns the capabilities of the event service.
 func (s *EventsService) GetServiceCapabilities() (res tev.GetServiceCapabilitiesResponse, err error) {
-	err = s.Client.Call(tev.GetServiceCapabilities{}, &res)
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/GetServiceCapabilitiesRequest")
+	err = s.Client.Call(tev.GetServiceCapabilities{}, &res, headers...)
 	return
 }
 
@@ -33,7 +40,8 @@ in order to provide information about the FilterDialects, Schema files and topic
 the device.
 */
 func (s *EventsService) GetEventProperties() (res tev.GetEventPropertiesResponse, err error) {
-	err = s.Client.Call(tev.GetEventProperties{}, &res)
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/GetEventPropertiesRequest")
+	err = s.Client.Call(tev.GetEventProperties{}, &res, headers...)
 	return
 }
 
@@ -44,14 +52,16 @@ without the ConsumerReference.
 
 If no Filter is specified the pullpoint notifies all occurring events to the client.
 */
-func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bool) (service *PullPointSubscription, err error) {
+func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bool, initialTerminationTime *tev.AbsoluteOrRelativeTimeType) (service *PullPointSubscription, err error) {
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/CreatePullPointSubscriptionRequest")
 	var res tev.CreatePullPointSubscriptionResponse
 	err = s.Client.Call(tev.CreatePullPointSubscription{
 		Filter: tev.FilterType(filter),
 		SubscriptionPolicy: &tev.SubscriptionPolicy{
 			ChangedOnly: changeOnly,
 		},
-	}, &res)
+		InitialTerminationTime: initialTerminationTime,
+	}, &res, headers...)
 	if err != nil {
 		return
 	}

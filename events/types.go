@@ -1,15 +1,58 @@
 package events
 
 import (
+	"time"
+
+	tt "github.com/atagirov/onvif4go/onvif"
 	"github.com/atagirov/onvif4go/xsd"
 )
 
 type FilterType string
 
-//<xsd:union memberTypes="xsd:dateTime xsd:duration"/>
+// AbsoluteOrRelativeTimeType <xsd:union memberTypes="xsd:dateTime xsd:duration"/>
 type AbsoluteOrRelativeTimeType struct { //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
-	xsd.DateTime `xml:"DateTime,omitempty"`
-	xsd.Duration `xml:"Duration,omitempty"`
+	duration *xsd.Duration
+	dateTime *time.Time
+}
+
+// UnmarshalText unmarshal AbsoluteOrRelativeTimeType from text
+func (v *AbsoluteOrRelativeTimeType) UnmarshalText(text []byte) error {
+	str := string(text)
+	if str[0] == 'P' {
+		var duration xsd.Duration
+		err := duration.UnmarshalText(text)
+		if err != nil {
+			return err
+		}
+		v.duration = &duration
+	} else {
+		t, err := time.Parse(time.RFC3339Nano, str)
+		if err != nil {
+			return err
+		}
+		v.dateTime = &t
+	}
+
+	return nil
+}
+
+// MarshalText marshal AbsoluteOrRelativeTimeType to text
+func (v AbsoluteOrRelativeTimeType) MarshalText() ([]byte, error) {
+	if v.duration == nil {
+		return v.dateTime.MarshalText()
+	}
+	return v.duration.MarshalText()
+}
+
+// NewAbsoluteTimeType make *AbsoluteOrRelativeTimeType from time.Time
+func NewAbsoluteTimeType(dateTime time.Time) *AbsoluteOrRelativeTimeType {
+	return &AbsoluteOrRelativeTimeType{dateTime: &dateTime}
+}
+
+// NewRelativeTimeType make *AbsoluteOrRelativeTimeType from time.Duration
+func NewRelativeTimeType(duration time.Duration) *AbsoluteOrRelativeTimeType {
+	d := xsd.Duration(duration)
+	return &AbsoluteOrRelativeTimeType{duration: &d}
 }
 
 type SubscriptionPolicy struct { //tev http://www.onvif.org/ver10/events/wsdl
@@ -74,13 +117,16 @@ type NotificationMessageHolderType struct {
 	SubscriptionReference *SubscriptionReference //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
 	Topic                 Topic
 	ProducerReference     *ProducerReference
-	Message               Message
+	Message               OnvifEventsMessage
 }
 
 type SubscriptionReference EndpointReferenceType
 type Topic TopicExpressionType
 type ProducerReference EndpointReferenceType
-type Message xsd.AnyType
+
+type OnvifEventsMessage struct {
+	Messages []tt.Message `xml:"http://www.onvif.org/ver10/schema Message"`
+}
 
 type TopicExpressionType struct { //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
 	Dialect xsd.AnyURI `xml:"Dialect,attr"`
@@ -97,7 +143,6 @@ type GetServiceCapabilitiesResponse struct {
 	Capabilities Capabilities
 }
 
-//BUG(r) Bad AbsoluteOrRelativeTimeType type
 type CreatePullPointSubscription struct {
 	XMLName                string                      `xml:"http://www.onvif.org/ver10/events/wsdl CreatePullPointSubscription"`
 	Filter                 FilterType                  `xml:"http://www.onvif.org/ver10/events/wsdl Filter,omitempty"`

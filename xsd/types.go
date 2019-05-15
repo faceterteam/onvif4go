@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
@@ -230,8 +229,7 @@ type GYearMonth AnySimpleType
 	Construct an instance of xsd GYearMonth type
 */
 func (tp GYearMonth) NewGYearMonth(time time.Time) GYearMonth {
-	return GYearMonth(fmt.Sprintf("", time.Year(), "-", time.Month()))
-	//return GYearMonth(time.Format("2004-04-05:00"))
+	return GYearMonth(time.Format("2006-01"))
 }
 
 /*
@@ -252,8 +250,7 @@ type GYear AnySimpleType
 	Construct an instance of xsd GYear type
 */
 func (tp GYear) NewGYear(time time.Time) GYear {
-	return GYear(fmt.Sprintf("", time.Year()))
-	//return GYearMonth(time.Format("2004-04-05:00"))
+	return GYear(time.Format("2006"))
 }
 
 /*
@@ -268,11 +265,9 @@ func (tp GYear) NewGYear(time time.Time) GYear {
 */
 type GMonthDay AnySimpleType
 
-/*
-	Construct an instance of xsd GMonthDay type
-*/
+// NewGMonthDay Construct an instance of xsd GMonthDay type
 func (tp GMonthDay) NewGMonthDay(time time.Time) GMonthDay {
-	return GMonthDay(fmt.Sprintf("--", time.Month(), "-", time.Day()))
+	return GMonthDay(time.Format("--01-02"))
 }
 
 /*
@@ -288,11 +283,9 @@ func (tp GMonthDay) NewGMonthDay(time time.Time) GMonthDay {
 */
 type GDay AnySimpleType
 
-/*
-	Construct an instance of xsd GDay type
-*/
+// NewGDay Construct an instance of xsd GDay type
 func (tp GDay) NewGDay(time time.Time) GDay {
-	return GDay(fmt.Sprintf("---", time.Day()))
+	return GDay(time.Format("---02"))
 }
 
 /*
@@ -310,7 +303,7 @@ func (tp GDay) NewGDay(time time.Time) GDay {
 type GMonth AnySimpleType
 
 func (tp GMonth) NewGMonth(time time.Time) GMonth {
-	return GMonth(fmt.Sprintf("--", time.Month()))
+	return GMonth(time.Format("--01"))
 }
 
 /*

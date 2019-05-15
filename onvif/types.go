@@ -486,24 +486,6 @@ type Config struct {
 	Parameters ItemList  `xml:"http://www.onvif.org/ver10/schema Parameters"`
 }
 
-type ItemList struct {
-	SimpleItem  []SimpleItem       `xml:"http://www.onvif.org/ver10/schema SimpleItem"`
-	ElementItem []ElementItem      `xml:"http://www.onvif.org/ver10/schema ElementItem"`
-	Extension   *ItemListExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
-}
-
-type SimpleItem struct {
-	Name  string            `xml:"Name,attr"`
-	Value xsd.AnySimpleType `xml:"Value,attr"`
-}
-
-type ElementItem struct {
-	Name  string `xml:"Name,attr"`
-	Value string `xml:",innerxml"`
-}
-
-type ItemListExtension xsd.AnyType
-
 type AnalyticsEngineConfigurationExtension xsd.AnyType
 
 type RuleEngineConfiguration struct {

@@ -19,6 +19,10 @@ func NewPullPointSubscription(settings tev.CreatePullPointSubscriptionResponse, 
 	}
 }
 
+func (s *PullPointSubscription) makeAddressingHeaders(action string) []interface{} {
+	return tev.MakeAnonymousAddressingHeaders(action, string(s.Settings.SubscriptionReference.Address.Content))
+}
+
 /*
 PullMessages pulls one or more messages from a PullPoint.
 The device shall provide the following PullMessages command for all SubscriptionManager
@@ -29,10 +33,11 @@ The command shall at least support a Timeout of one minute. In case a device sup
 of less messages than requested it shall return these without generating a fault.
 */
 func (s *PullPointSubscription) PullMessages(timeout time.Duration, messageLimit int) (res tev.PullMessagesResponse, err error) {
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/PullMessagesRequest")
 	err = s.Client.Call(tev.PullMessages{
 		Timeout:      xsd.Duration(timeout),
 		MessageLimit: messageLimit,
-	}, &res)
+	}, &res, headers...)
 	return
 	// <wsdl:fault name="PullMessagesFaultResponse" message="tev:PullMessagesFaultResponse" wsaw:Action="http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/PullMessages/Fault/PullMessagesFaultResponse"/>
 }
@@ -41,8 +46,9 @@ func (s *PullPointSubscription) PullMessages(timeout time.Duration, messageLimit
 Unsubscribe shall terminate the lifetime of a pull point
 */
 func (s *PullPointSubscription) Unsubscribe() (err error) {
+	headers := s.makeAddressingHeaders("http://docs.oasis-open.org/wsn/bw-2/SubscriptionManager/UnsubscribeRequest")
 	var res tev.UnsubscribeResponse
-	err = s.Client.Call(tev.UnsubscribeRequest{}, &res)
+	err = s.Client.Call(tev.UnsubscribeRequest{}, &res, headers...)
 	return
 	// <wsdl:fault  name="ResourceUnknownFault" message="wsrf-rw:ResourceUnknownFault" />
 	// <wsdl:fault  name="UnableToDestroySubscriptionFault" message="wsntw:UnableToDestroySubscriptionFault" />
@@ -59,11 +65,12 @@ The UtcTime argument will be matched against the UtcTime attribute on a
 NotificationMessage.
 */
 func (s *PullPointSubscription) Seek(time time.Time, reverse bool) (err error) {
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/SeekRequest")
 	var res tev.SeekResponse
 	err = s.Client.Call(tev.Seek{
 		UtcTime: xsd.MakeDateTime(time),
 		Reverse: reverse,
-	}, &res)
+	}, &res, headers...)
 	return
 }
 
@@ -77,8 +84,9 @@ requested directly from the SubscriptionManager which was returned in either the
 SubscriptionResponse or in the CreatePullPointSubscriptionResponse. The property update is
 transmitted via the notification transportation of the notification interface. This method is mandatory.
 */
-func (s *PullPointSubscription) SetSynchronizationPoint(time time.Time, reverse bool) (err error) {
+func (s *PullPointSubscription) SetSynchronizationPoint() (err error) {
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/PullPointSubscription/SetSynchronizationPointRequest")
 	var res tev.SetSynchronizationPointResponse
-	err = s.Client.Call(tev.SetSynchronizationPoint{}, &res)
+	err = s.Client.Call(tev.SetSynchronizationPoint{}, &res, headers...)
 	return
 }

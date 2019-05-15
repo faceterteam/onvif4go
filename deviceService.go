@@ -37,12 +37,14 @@ func (s *DeviceService) GetServices(includeCapability bool) (res tds.GetServices
 	return
 }
 
-// GetSystemDateAndTime gets the device system date and time.
-// The device shall support the return of the daylight saving setting
-// and of the manual system date and time (if applicable) or indication
-// of NTP time (if applicable) through the GetSystemDateAndTime command.
-//
-// A device shall provide the UTCDateTime information.
+/*
+GetSystemDateAndTime gets the device system date and time.
+The device shall support the return of the daylight saving setting
+and of the manual system date and time (if applicable) or indication
+of NTP time (if applicable) through the GetSystemDateAndTime command.
+
+A device shall provide the UTCDateTime information.
+*/
 func (s *DeviceService) GetSystemDateAndTime() (res tds.GetSystemDateAndTimeResponse, err error) {
 	err = s.Client.Call(tds.GetSystemDateAndTime{}, &res)
 	return
@@ -92,6 +94,15 @@ for the user token through the GetUsers command.
 */
 func (s *DeviceService) GetUsers() (res tds.GetUsersResponse, err error) {
 	err = s.Client.Call(tds.GetUsers{}, &res)
+	return
+}
+
+/*
+GetNetworkProtocols gets defined network protocols from a device.
+The device shall support the GetNetworkProtocols command returning configured network protocols.
+*/
+func (s *DeviceService) GetNetworkProtocols() (res tds.GetNetworkProtocolsResponse, err error) {
+	err = s.Client.Call(tds.GetNetworkProtocols{}, &res)
 	return
 }
 
@@ -361,12 +372,6 @@ func (s *DeviceService) GetUsers() (res tds.GetUsersResponse, err error) {
 		request.</wsdl:documentation>
 	<wsdl:input message="tds:SetNetworkInterfacesRequest"/>
 	<wsdl:output message="tds:SetNetworkInterfacesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetNetworkProtocols">
-	<wsdl:documentation>This operation gets defined network protocols from a device. The device shall support the
-		GetNetworkProtocols command returning configured network protocols.</wsdl:documentation>
-	<wsdl:input message="tds:GetNetworkProtocolsRequest"/>
-	<wsdl:output message="tds:GetNetworkProtocolsResponse"/>
 </wsdl:operation>
 <wsdl:operation name="SetNetworkProtocols">
 	<wsdl:documentation>This operation configures defined network protocols on a device. The device shall support
