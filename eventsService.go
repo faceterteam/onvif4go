@@ -5,41 +5,66 @@ import (
 )
 
 type EventsService struct {
-	Client onvifCaller
+	Client    onvifCaller
+	onvifAuth *onvifAuth
+	endpoint  string
 }
 
 func NewEventsService(endpoint string, onvifAuth *onvifAuth) *EventsService {
 	return &EventsService{
-		Client: NewOnvifClient(endpoint, onvifAuth),
+		Client:    NewOnvifClient(endpoint, onvifAuth),
+		onvifAuth: onvifAuth,
+		endpoint:  endpoint,
 	}
+}
+
+func (s *EventsService) makeAddressingHeaders(action string) []interface{} {
+	return tev.MakeAnonymousAddressingHeaders(action, s.endpoint)
 }
 
 // GetServiceCapabilities returns the capabilities of the event service.
 func (s *EventsService) GetServiceCapabilities() (res tev.GetServiceCapabilitiesResponse, err error) {
-	err = s.Client.Call(tev.GetServiceCapabilities{}, &res)
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/GetServiceCapabilitiesRequest")
+	err = s.Client.Call(tev.GetServiceCapabilities{}, &res, headers...)
 	return
 }
 
-// GetEventProperties returns information about the FilterDialects, Schema files and
-// topics supported by the device.
-//
-// The WS-BaseNotification specification defines a set of OPTIONAL WS-ResouceProperties.
-// This specification does not require the implementation of the WS-ResourceProperty interface.
-// Instead, the subsequent direct interface shall be implemented by an ONVIF compliant device
-// in order to provide information about the FilterDialects, Schema files and topics supported by
-// the device.
+/*
+GetEventProperties returns information about the FilterDialects, Schema files and
+topics supported by the device.
+
+The WS-BaseNotification specification defines a set of OPTIONAL WS-ResouceProperties.
+This specification does not require the implementation of the WS-ResourceProperty interface.
+Instead, the subsequent direct interface shall be implemented by an ONVIF compliant device
+in order to provide information about the FilterDialects, Schema files and topics supported by
+the device.
+*/
 func (s *EventsService) GetEventProperties() (res tev.GetEventPropertiesResponse, err error) {
-	err = s.Client.Call(tev.GetEventProperties{}, &res)
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/GetEventPropertiesRequest")
+	err = s.Client.Call(tev.GetEventProperties{}, &res, headers...)
 	return
 }
 
-// CreatePullPointSubscription returns a PullPointSubscription that can be polled using PullMessages.
-// This message contains the same elements as the SubscriptionRequest of the WS-BaseNotification
-// without the ConsumerReference.
-//
-// If no Filter is specified the pullpoint notifies all occurring events to the client.
-func (s *EventsService) CreatePullPointSubscription() (res tev.CreatePullPointSubscriptionResponse, err error) {
-	err = s.Client.Call(tev.CreatePullPointSubscription{}, &res)
+/*
+CreatePullPointSubscription returns a PullPointSubscription that can be polled using PullMessages.
+This message contains the same elements as the SubscriptionRequest of the WS-BaseNotification
+without the ConsumerReference.
+
+If no Filter is specified the pullpoint notifies all occurring events to the client.
+*/
+func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bool, initialTerminationTime *tev.AbsoluteOrRelativeTimeType) (service *PullPointSubscription, err error) {
+	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/CreatePullPointSubscriptionRequest")
+	var res tev.CreatePullPointSubscriptionResponse
+	err = s.Client.Call(tev.CreatePullPointSubscription{
+		Filter: tev.FilterType(filter),
+		SubscriptionPolicy: &tev.SubscriptionPolicy{
+			ChangedOnly: changeOnly,
+		},
+		InitialTerminationTime: initialTerminationTime,
+	}, &res, headers...)
+	if err != nil {
+		return
+	}
 	/*
 		<wsdl:fault name="ResourceUnknownFault" message="wsrf-rw:ResourceUnknownFault"/>
 		<wsdl:fault name="InvalidFilterFault" message="wsntw:InvalidFilterFault"/>
@@ -54,5 +79,7 @@ func (s *EventsService) CreatePullPointSubscription() (res tev.CreatePullPointSu
 		<wsdl:fault name="NotifyMessageNotSupportedFault" message="wsntw:NotifyMessageNotSupportedFault"/>
 		<wsdl:fault name="SubscribeCreationFailedFault" message="wsntw:SubscribeCreationFailedFault"/>
 	*/
+
+	service = NewPullPointSubscription(res, s.onvifAuth)
 	return
 }

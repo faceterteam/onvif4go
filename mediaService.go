@@ -15,6 +15,12 @@ func NewMediaService(endpoint string, onvifAuth *onvifAuth) *MediaService {
 	}
 }
 
+func (s *MediaService) WithoutAuth() *MediaService {
+	return &MediaService{
+		Client: s.Client.WithoutAuth(),
+	}
+}
+
 // GetProfiles using for ask the existing media profiles of a device
 // Pre-configured or dynamically configured profiles can be retrieved using this command.
 // This command lists all configured profiles in a device.

@@ -360,7 +360,7 @@ type VideoSourceConfigurationExtension struct {
 
 type Rotate struct {
 	Mode      RotateMode      `xml:"http://www.onvif.org/ver10/schema Mode"`
-	Degree    xsd.Int         `xml:"http://www.onvif.org/ver10/schema Degree"`
+	Degree    int             `xml:"http://www.onvif.org/ver10/schema Degree"`
 	Extension RotateExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
 }
 
@@ -418,20 +418,20 @@ type VideoEncoderConfiguration struct {
 type VideoEncoding xsd.String
 
 type VideoRateControl struct {
-	FrameRateLimit   xsd.Int `xml:"http://www.onvif.org/ver10/schema FrameRateLimit"`
-	EncodingInterval xsd.Int `xml:"http://www.onvif.org/ver10/schema EncodingInterval"`
-	BitrateLimit     xsd.Int `xml:"http://www.onvif.org/ver10/schema BitrateLimit"`
+	FrameRateLimit   int `xml:"http://www.onvif.org/ver10/schema FrameRateLimit"`
+	EncodingInterval int `xml:"http://www.onvif.org/ver10/schema EncodingInterval"`
+	BitrateLimit     int `xml:"http://www.onvif.org/ver10/schema BitrateLimit"`
 }
 
 type Mpeg4Configuration struct {
-	GovLength    xsd.Int      `xml:"http://www.onvif.org/ver10/schema GovLength"`
+	GovLength    int          `xml:"http://www.onvif.org/ver10/schema GovLength"`
 	Mpeg4Profile Mpeg4Profile `xml:"http://www.onvif.org/ver10/schema Mpeg4Profile"`
 }
 
 type Mpeg4Profile xsd.String
 
 type H264Configuration struct {
-	GovLength   xsd.Int     `xml:"http://www.onvif.org/ver10/schema GovLength"`
+	GovLength   int         `xml:"http://www.onvif.org/ver10/schema GovLength"`
 	H264Profile H264Profile `xml:"http://www.onvif.org/ver10/schema H264Profile"`
 }
 
@@ -485,24 +485,6 @@ type Config struct {
 	Type       xsd.QName `xml:"Type,attr"`
 	Parameters ItemList  `xml:"http://www.onvif.org/ver10/schema Parameters"`
 }
-
-type ItemList struct {
-	SimpleItem  []SimpleItem       `xml:"http://www.onvif.org/ver10/schema SimpleItem"`
-	ElementItem []ElementItem      `xml:"http://www.onvif.org/ver10/schema ElementItem"`
-	Extension   *ItemListExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
-}
-
-type SimpleItem struct {
-	Name  string            `xml:"Name,attr"`
-	Value xsd.AnySimpleType `xml:"Value,attr"`
-}
-
-type ElementItem struct {
-	Name  string `xml:"Name,attr"`
-	Value string `xml:",innerxml"`
-}
-
-type ItemListExtension xsd.AnyType
 
 type AnalyticsEngineConfigurationExtension xsd.AnyType
 
@@ -1073,7 +1055,7 @@ type PTZPresetTourStatusExtension xsd.AnyType
 
 type PTZPresetTourStartingCondition struct {
 	RandomPresetOrder bool                                    `xml:"RandomPresetOrder,attr"`
-	RecurringTime     xsd.Int                                 `xml:"http://www.onvif.org/ver10/schema RecurringTime"`
+	RecurringTime     int                                     `xml:"http://www.onvif.org/ver10/schema RecurringTime"`
 	RecurringDuration xsd.Duration                            `xml:"http://www.onvif.org/ver10/schema RecurringDuration"`
 	Direction         PTZPresetTourDirection                  `xml:"http://www.onvif.org/ver10/schema Direction"`
 	Extension         PTZPresetTourStartingConditionExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
@@ -1137,7 +1119,20 @@ type SystemDateTime struct {
 	Extension       SystemDateTimeExtension
 }
 
-func (d *DateTime) GetTime() time.Time {
+func (d *SystemDateTime) GetUTCTime() (time.Time, error) {
+	if d.UTCDateTime != nil {
+		return d.UTCDateTime.getTime(), nil
+	}
+
+	tz, err := ParsePosixTimezone(string(d.TimeZone.TZ))
+	if err != nil {
+		return time.Now().UTC(), err
+	}
+
+	return tz.LocalToUTC(d.LocalDateTime.getTime()), nil
+}
+
+func (d *DateTime) getTime() time.Time {
 	return time.Date(
 		d.Date.Year, time.Month(d.Date.Month), d.Date.Day,
 		d.Time.Hour, d.Time.Minute, d.Time.Second, 0,
@@ -1466,7 +1461,7 @@ type NetworkInterface struct {
 type NetworkInterfaceInfo struct {
 	Name      xsd.String
 	HwAddress HwAddress
-	MTU       xsd.Int
+	MTU       int
 }
 
 type HwAddress xsd.Token
@@ -1477,12 +1472,12 @@ type NetworkInterfaceLink struct {
 	InterfaceType IANA_IfTypes `xml:"IANA-IfTypes"`
 }
 
-type IANA_IfTypes xsd.Int
+type IANA_IfTypes int
 
 type NetworkInterfaceConnectionSetting struct {
-	AutoNegotiation bool    `xml:"http://www.onvif.org/ver10/schema AutoNegotiation"`
-	Speed           xsd.Int `xml:"http://www.onvif.org/ver10/schema Speed"`
-	Duplex          Duplex  `xml:"http://www.onvif.org/ver10/schema Duplex"`
+	AutoNegotiation bool   `xml:"http://www.onvif.org/ver10/schema AutoNegotiation"`
+	Speed           int    `xml:"http://www.onvif.org/ver10/schema Speed"`
+	Duplex          Duplex `xml:"http://www.onvif.org/ver10/schema Duplex"`
 }
 
 //TODO: enum
@@ -1563,7 +1558,7 @@ type IPv6ConfigurationExtension xsd.AnyType
 
 type PrefixedIPv6Address struct {
 	Address      IPv6Address `xml:"http://www.onvif.org/ver10/schema Address"`
-	PrefixLength xsd.Int     `xml:"http://www.onvif.org/ver10/schema PrefixLength"`
+	PrefixLength int         `xml:"http://www.onvif.org/ver10/schema PrefixLength"`
 }
 
 //TODO: enumeration
@@ -1584,13 +1579,13 @@ type IPv4Configuration struct {
 //optional, unbounded
 type PrefixedIPv4Address struct {
 	Address      IPv4Address `xml:"http://www.onvif.org/ver10/schema Address"`
-	PrefixLength xsd.Int     `xml:"http://www.onvif.org/ver10/schema PrefixLength"`
+	PrefixLength int         `xml:"http://www.onvif.org/ver10/schema PrefixLength"`
 }
 
 type NetworkInterfaceSetConfiguration struct {
 	Enabled   bool                                      `xml:"http://www.onvif.org/ver10/schema Enabled"`
 	Link      NetworkInterfaceConnectionSetting         `xml:"http://www.onvif.org/ver10/schema Link"`
-	MTU       xsd.Int                                   `xml:"http://www.onvif.org/ver10/schema MTU"`
+	MTU       int                                       `xml:"http://www.onvif.org/ver10/schema MTU"`
 	IPv4      IPv4NetworkInterfaceSetConfiguration      `xml:"http://www.onvif.org/ver10/schema IPv4"`
 	IPv6      IPv6NetworkInterfaceSetConfiguration      `xml:"http://www.onvif.org/ver10/schema IPv6"`
 	Extension NetworkInterfaceSetConfigurationExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
@@ -1620,7 +1615,7 @@ type IPv4NetworkInterfaceSetConfiguration struct {
 type NetworkProtocol struct {
 	Name      NetworkProtocolType      `xml:"http://www.onvif.org/ver10/schema Name"`
 	Enabled   bool                     `xml:"http://www.onvif.org/ver10/schema Enabled"`
-	Port      xsd.Int                  `xml:"http://www.onvif.org/ver10/schema Port"`
+	Port      int                      `xml:"http://www.onvif.org/ver10/schema Port"`
 	Extension NetworkProtocolExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
 }
 
@@ -1709,7 +1704,7 @@ type CertificateInformation struct {
 	SubjectDN          xsd.String
 	KeyUsage           CertificateUsage
 	ExtendedKeyUsage   CertificateUsage
-	KeyLength          xsd.Int
+	KeyLength          int
 	Version            xsd.String
 	SerialNum          xsd.String
 	SignatureAlgorithm xsd.String
@@ -1733,7 +1728,7 @@ type Dot1XConfiguration struct {
 	Dot1XConfigurationToken ReferenceToken              `xml:"http://www.onvif.org/ver10/schema Dot1XConfigurationToken"`
 	Identity                xsd.String                  `xml:"http://www.onvif.org/ver10/schema Identity"`
 	AnonymousID             xsd.String                  `xml:"http://www.onvif.org/ver10/schema AnonymousID,omitempty"`
-	EAPMethod               xsd.Int                     `xml:"http://www.onvif.org/ver10/schema EAPMethod"`
+	EAPMethod               int                         `xml:"http://www.onvif.org/ver10/schema EAPMethod"`
 	CACertificateID         xsd.Token                   `xml:"http://www.onvif.org/ver10/schema CACertificateID,omitempty"`
 	EAPMethodConfiguration  EAPMethodConfiguration      `xml:"http://www.onvif.org/ver10/schema EAPMethodConfiguration,omitempty"`
 	Extension               Dot1XConfigurationExtension `xml:"http://www.onvif.org/ver10/schema Extension,omitempty"`

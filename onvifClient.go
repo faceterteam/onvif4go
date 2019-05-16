@@ -7,9 +7,11 @@ import (
 )
 
 type onvifCaller interface {
-	Call(request, response interface{}) error
+	Call(request, response interface{}, headers ...interface{}) error
 
-	CallWithoutAuth(request, response interface{}) error
+	WithoutAuth() onvifCaller
+
+	SetLogger(logRequest, logResponse func(message string))
 }
 
 type onvifAuth struct {
@@ -30,19 +32,22 @@ func NewOnvifClient(endpoint string, auth *onvifAuth) *onvifClient {
 	}
 }
 
-func (c *onvifClient) callOnInternal(request, response interface{}, useAuth bool) error {
-	if c.auth.login != "" && useAuth {
-		return c.soapClient.Do(request, response,
-			soap.MakeWSSecurity(c.auth.login, c.auth.password, c.auth.timeDiff))
+func (c *onvifClient) Call(request, response interface{}, headers ...interface{}) error {
+	if c.auth.login != "" {
+		headers = append(headers, soap.MakeWSSecurity(c.auth.login, c.auth.password, c.auth.timeDiff))
 	}
 
-	return c.soapClient.Do(request, response)
+	return c.soapClient.Do(request, response, headers...)
 }
 
-func (c *onvifClient) Call(request, response interface{}) error {
-	return c.callOnInternal(request, response, true)
+func (c *onvifClient) SetLogger(logRequest, logResponse func(message string)) {
+	c.soapClient.LogRequest = logRequest
+	c.soapClient.LogResponse = logResponse
 }
 
-func (c *onvifClient) CallWithoutAuth(request, response interface{}) error {
-	return c.callOnInternal(request, response, false)
+func (c *onvifClient) WithoutAuth() onvifCaller {
+	return &onvifClient{
+		soapClient: c.soapClient,
+		auth:       &onvifAuth{},
+	}
 }
