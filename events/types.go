@@ -1,15 +1,58 @@
 package events
 
 import (
+	"time"
+
+	tt "github.com/atagirov/onvif4go/onvif"
 	"github.com/atagirov/onvif4go/xsd"
 )
 
 type FilterType string
 
-//<xsd:union memberTypes="xsd:dateTime xsd:duration"/>
+// AbsoluteOrRelativeTimeType <xsd:union memberTypes="xsd:dateTime xsd:duration"/>
 type AbsoluteOrRelativeTimeType struct { //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
-	xsd.DateTime
-	xsd.Duration
+	duration *xsd.Duration
+	dateTime *time.Time
+}
+
+// UnmarshalText unmarshal AbsoluteOrRelativeTimeType from text
+func (v *AbsoluteOrRelativeTimeType) UnmarshalText(text []byte) error {
+	str := string(text)
+	if str[0] == 'P' {
+		var duration xsd.Duration
+		err := duration.UnmarshalText(text)
+		if err != nil {
+			return err
+		}
+		v.duration = &duration
+	} else {
+		t, err := time.Parse(time.RFC3339Nano, str)
+		if err != nil {
+			return err
+		}
+		v.dateTime = &t
+	}
+
+	return nil
+}
+
+// MarshalText marshal AbsoluteOrRelativeTimeType to text
+func (v AbsoluteOrRelativeTimeType) MarshalText() ([]byte, error) {
+	if v.duration == nil {
+		return v.dateTime.MarshalText()
+	}
+	return v.duration.MarshalText()
+}
+
+// NewAbsoluteTimeType make *AbsoluteOrRelativeTimeType from time.Time
+func NewAbsoluteTimeType(dateTime time.Time) *AbsoluteOrRelativeTimeType {
+	return &AbsoluteOrRelativeTimeType{dateTime: &dateTime}
+}
+
+// NewRelativeTimeType make *AbsoluteOrRelativeTimeType from time.Duration
+func NewRelativeTimeType(duration time.Duration) *AbsoluteOrRelativeTimeType {
+	d := xsd.Duration(duration)
+	return &AbsoluteOrRelativeTimeType{duration: &d}
 }
 
 type SubscriptionPolicy struct { //tev http://www.onvif.org/ver10/events/wsdl
@@ -71,19 +114,23 @@ type TopicExpressionDialect xsd.AnyURI
 type NotificationMessage NotificationMessageHolderType //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
 
 type NotificationMessageHolderType struct {
-	SubscriptionReference SubscriptionReference //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
+	SubscriptionReference *SubscriptionReference //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
 	Topic                 Topic
-	ProducerReference     ProducerReference
-	Message               Message
+	ProducerReference     *ProducerReference
+	Message               OnvifEventsMessage
 }
 
 type SubscriptionReference EndpointReferenceType
 type Topic TopicExpressionType
 type ProducerReference EndpointReferenceType
-type Message xsd.AnyType
+
+type OnvifEventsMessage struct {
+	Messages []tt.Message `xml:"http://www.onvif.org/ver10/schema Message"`
+}
 
 type TopicExpressionType struct { //wsnt http://docs.oasis-open.org/wsn/b-2.xsd
 	Dialect xsd.AnyURI `xml:"Dialect,attr"`
+	Value   string     `xml:",chardata"`
 }
 
 //Event main types
@@ -96,12 +143,11 @@ type GetServiceCapabilitiesResponse struct {
 	Capabilities Capabilities
 }
 
-//BUG(r) Bad AbsoluteOrRelativeTimeType type
 type CreatePullPointSubscription struct {
-	XMLName                string                     `xml:"http://www.onvif.org/ver10/events/wsdl CreatePullPointSubscription"`
-	Filter                 FilterType                 `xml:"http://www.onvif.org/ver10/events/wsdl Filter"`
-	InitialTerminationTime AbsoluteOrRelativeTimeType `xml:"http://www.onvif.org/ver10/events/wsdl InitialTerminationTime"`
-	SubscriptionPolicy     SubscriptionPolicy         `xml:"http://www.onvif.org/ver10/events/wsdl SubscriptionPolicy"`
+	XMLName                string                      `xml:"http://www.onvif.org/ver10/events/wsdl CreatePullPointSubscription"`
+	Filter                 FilterType                  `xml:"http://www.onvif.org/ver10/events/wsdl Filter,omitempty"`
+	InitialTerminationTime *AbsoluteOrRelativeTimeType `xml:"http://www.onvif.org/ver10/events/wsdl InitialTerminationTime,omitempty"`
+	SubscriptionPolicy     *SubscriptionPolicy         `xml:"http://www.onvif.org/ver10/events/wsdl SubscriptionPolicy,omitempty"`
 }
 
 type CreatePullPointSubscriptionResponse struct {
@@ -165,18 +211,18 @@ type GetEventPropertiesResponse struct {
 type PullMessages struct {
 	XMLName      string       `xml:"http://www.onvif.org/ver10/events/wsdl PullMessages"`
 	Timeout      xsd.Duration `xml:"http://www.onvif.org/ver10/events/wsdl Timeout"`
-	MessageLimit xsd.Int      `xml:"http://www.onvif.org/ver10/events/wsdl MessageLimit"`
+	MessageLimit int          `xml:"http://www.onvif.org/ver10/events/wsdl MessageLimit"`
 }
 
 type PullMessagesResponse struct {
 	CurrentTime          CurrentTime
 	TerminationTime      TerminationTime
-	NotificationMessages []NotificationMessage `xml:"http://www.onvif.org/ver10/events/wsdl NotificationMessage"`
+	NotificationMessages []NotificationMessage `xml:"http://docs.oasis-open.org/wsn/b-2 NotificationMessage"`
 }
 
 type PullMessagesFaultResponse struct {
 	MaxTimeout      xsd.Duration
-	MaxMessageLimit xsd.Int
+	MaxMessageLimit int
 }
 
 type Seek struct {
@@ -193,4 +239,11 @@ type SetSynchronizationPoint struct {
 }
 
 type SetSynchronizationPointResponse struct {
+}
+
+type UnsubscribeRequest struct {
+	XMLName string `xml:"http://www.onvif.org/ver10/events/wsdl UnsubscribeRequest"`
+}
+
+type UnsubscribeResponse struct {
 }
