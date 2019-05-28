@@ -9,9 +9,9 @@ type MediaService struct {
 	Client onvifCaller
 }
 
-func NewMediaService(endpoint string, onvifAuth *onvifAuth) *MediaService {
+func NewMediaService(endpoint string, onvifDevice *OnvifDevice) *MediaService {
 	return &MediaService{
-		Client: NewOnvifClient(endpoint, onvifAuth),
+		Client: NewOnvifClient(endpoint, &onvifDevice.auth),
 	}
 }
 

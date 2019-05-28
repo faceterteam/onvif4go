@@ -82,12 +82,12 @@ func (onvifDevice *OnvifDevice) Initialize() error {
 	}
 	if capabilities.Events != nil {
 		xaddr := fixXAddr(capabilities.Events.XAddr, onvifDevice.xaddr)
-		onvifDevice.Events = NewEventsService(xaddr, &onvifDevice.auth)
+		onvifDevice.Events = NewEventsService(xaddr, onvifDevice)
 		onvifDevice.endpoints["events"] = onvifDevice.Events.Client
 	}
 	if capabilities.Media != nil {
 		mediaURI := fixXAddr(capabilities.Media.XAddr, onvifDevice.xaddr)
-		onvifDevice.Media = NewMediaService(mediaURI, &onvifDevice.auth)
+		onvifDevice.Media = NewMediaService(mediaURI, onvifDevice)
 		onvifDevice.endpoints["media"] = onvifDevice.Media.Client
 	}
 	if capabilities.Imaging != nil {
