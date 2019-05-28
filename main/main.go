@@ -47,9 +47,10 @@ func main() {
 		return
 	}
 
-	fmt.Println(pullPoint.Settings.SubscriptionReference.Address.Content)
+	fmt.Println(pullPoint.SubscriptionReference.Address.Content)
 
-	//pullPoint.Client.SetLogger(logClient, logClient)
+	pullPointSubscription := onvif4go.NewPullPointSubscription(pullPoint, camera)
+	//pullPointSubscription.Client.SetLogger(logClient, logClient)
 
 	pullPointTicker := time.NewTicker(time.Second * 30)
 
@@ -63,12 +64,12 @@ func main() {
 			case _ = <-pullPointTicker.C:
 				//fmt.Println("SetSynchronizationPoint", t)
 
-				err := pullPoint.SetSynchronizationPoint()
+				err := pullPointSubscription.SetSynchronizationPoint()
 				if err != nil {
 					fmt.Println("pullPoint.SetSynchronizationPoint error:", err.Error())
 				}
 			default:
-				messages, err := pullPoint.PullMessages(time.Second*5, 1024)
+				messages, err := pullPointSubscription.PullMessages(time.Second*5, 1024)
 				if err != nil {
 					fmt.Println("pullPoint.PullMessages error:", err.Error())
 					return
@@ -113,7 +114,7 @@ func main() {
 			}
 		}
 
-		pullPoint.Unsubscribe()
+		pullPointSubscription.Unsubscribe()
 	}()
 
 	time.Sleep(60 * time.Minute)

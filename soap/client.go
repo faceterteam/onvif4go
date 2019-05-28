@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type SoapClient struct {
@@ -44,7 +45,9 @@ func (soap *SoapClient) Do(request, response interface{}, headers ...interface{}
 		soap.LogRequest(string(message))
 	}
 
-	httpClient := new(http.Client)
+	httpClient := &http.Client{
+		Timeout: time.Duration(10 * time.Second),
+	}
 	resp, err := httpClient.Post(soap.Endpoint, "application/soap+xml; charset=utf-8", bytes.NewBuffer(message))
 	if err != nil {
 		return err

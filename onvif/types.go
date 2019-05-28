@@ -1613,10 +1613,10 @@ type IPv4NetworkInterfaceSetConfiguration struct {
 }
 
 type NetworkProtocol struct {
-	Name      NetworkProtocolType      `xml:"http://www.onvif.org/ver10/schema Name"`
-	Enabled   bool                     `xml:"http://www.onvif.org/ver10/schema Enabled"`
-	Port      int                      `xml:"http://www.onvif.org/ver10/schema Port"`
-	Extension NetworkProtocolExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
+	Name      NetworkProtocolType       `xml:"http://www.onvif.org/ver10/schema Name"`
+	Enabled   bool                      `xml:"http://www.onvif.org/ver10/schema Enabled"`
+	Port      int                       `xml:"http://www.onvif.org/ver10/schema Port"`
+	Extension *NetworkProtocolExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
 }
 
 type NetworkProtocolExtension xsd.AnyType

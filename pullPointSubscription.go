@@ -12,9 +12,9 @@ type PullPointSubscription struct {
 	Settings tev.CreatePullPointSubscriptionResponse
 }
 
-func NewPullPointSubscription(settings tev.CreatePullPointSubscriptionResponse, onvifAuth *onvifAuth) *PullPointSubscription {
+func NewPullPointSubscription(settings tev.CreatePullPointSubscriptionResponse, onvifDevice *OnvifDevice) *PullPointSubscription {
 	return &PullPointSubscription{
-		Client:   NewOnvifClient(string(settings.SubscriptionReference.Address.Content), onvifAuth),
+		Client:   NewOnvifClient(string(settings.SubscriptionReference.Address.Content), &onvifDevice.auth),
 		Settings: settings,
 	}
 }

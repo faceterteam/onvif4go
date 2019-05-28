@@ -5,16 +5,14 @@ import (
 )
 
 type EventsService struct {
-	Client    onvifCaller
-	onvifAuth *onvifAuth
-	endpoint  string
+	Client   onvifCaller
+	endpoint string
 }
 
-func NewEventsService(endpoint string, onvifAuth *onvifAuth) *EventsService {
+func NewEventsService(endpoint string, onvifDevice *OnvifDevice) *EventsService {
 	return &EventsService{
-		Client:    NewOnvifClient(endpoint, onvifAuth),
-		onvifAuth: onvifAuth,
-		endpoint:  endpoint,
+		Client:   NewOnvifClient(endpoint, &onvifDevice.auth),
+		endpoint: endpoint,
 	}
 }
 
@@ -52,9 +50,8 @@ without the ConsumerReference.
 
 If no Filter is specified the pullpoint notifies all occurring events to the client.
 */
-func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bool, initialTerminationTime *tev.AbsoluteOrRelativeTimeType) (service *PullPointSubscription, err error) {
+func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bool, initialTerminationTime *tev.AbsoluteOrRelativeTimeType) (res tev.CreatePullPointSubscriptionResponse, err error) {
 	headers := s.makeAddressingHeaders("http://www.onvif.org/ver10/events/wsdl/EventPortType/CreatePullPointSubscriptionRequest")
-	var res tev.CreatePullPointSubscriptionResponse
 	err = s.Client.Call(tev.CreatePullPointSubscription{
 		Filter: tev.FilterType(filter),
 		SubscriptionPolicy: &tev.SubscriptionPolicy{
@@ -62,9 +59,7 @@ func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bo
 		},
 		InitialTerminationTime: initialTerminationTime,
 	}, &res, headers...)
-	if err != nil {
-		return
-	}
+
 	/*
 		<wsdl:fault name="ResourceUnknownFault" message="wsrf-rw:ResourceUnknownFault"/>
 		<wsdl:fault name="InvalidFilterFault" message="wsntw:InvalidFilterFault"/>
@@ -80,6 +75,5 @@ func (s *EventsService) CreatePullPointSubscription(filter string, changeOnly bo
 		<wsdl:fault name="SubscribeCreationFailedFault" message="wsntw:SubscribeCreationFailedFault"/>
 	*/
 
-	service = NewPullPointSubscription(res, s.onvifAuth)
 	return
 }
