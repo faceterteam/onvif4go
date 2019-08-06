@@ -1,10 +1,6 @@
 package onvif4go
 
 import (
-	"fmt"
-	"net"
-	"time"
-
 	tds "github.com/atagirov/onvif4go/device"
 	tt "github.com/atagirov/onvif4go/onvif"
 	"github.com/atagirov/onvif4go/xsd"
@@ -116,24 +112,9 @@ SetSystemDateAndTime sets the device system date and time.
 The device shall support the configuration of the daylight saving setting and of the manual system date and time
 (if applicable) or indication of NTP time (if applicable) through the SetSystemDateAndTime command.
 */
-func (s *DeviceService) SetSystemDateAndTime(datetime time.Time, datetimeType string, dst bool, timezone string) (err error) {
+func (s *DeviceService) SetSystemDateAndTime(req tds.SetSystemDateAndTime) (err error) {
 	var res tds.SetSystemDateAndTimeResponse
-	err = s.Client.Call(tds.SetSystemDateAndTime{
-		DateTimeType: tt.SetDateTimeType(datetimeType),
-		DaylightSavings: dst,
-		TimeZone: tt.TimeZone{TZ: xsd.Token(timezone)},
-		UTCDateTime: tt.DateTime{
-			Time: tt.Time{
-				Hour:   datetime.Hour(),
-				Minute: datetime.Minute(),
-				Second: datetime.Second(),
-			},
-			Date: tt.Date{
-				Year: datetime.Year(),
-				Month: int(datetime.Month()),
-				Day: datetime.Day(),
-			}}}, &res)
-
+	err = s.Client.Call(req, &res)
 	return
 }
 
@@ -297,19 +278,9 @@ remote device.The algorithm to use for deriving the password is described in sec
 
 To remove the remote user SetRemoteUser should be called without the RemoteUser parameter.
 */
-func (s *DeviceService) SetRemoteUser(username string, password string, useDerivedPassword bool) (err error) {
+func (s *DeviceService) SetRemoteUser(remoteUser *tt.RemoteUser) (err error) {
 	var res tds.SetRemoteUserResponse
-	err = s.Client.Call(tds.SetRemoteUser{RemoteUser: &tt.RemoteUser{
-		Username: username,
-		Password: password,
-		UseDerivedPassword: useDerivedPassword,
-	}}, &res)
-	return
-}
-
-func (s *DeviceService) RemoveRemoteUser() (err error) {
-	var res tds.SetRemoteUserResponse
-	err = s.Client.Call(tds.SetRemoteUser{}, &res)
+	err = s.Client.Call(tds.SetRemoteUser{RemoteUser: remoteUser}, &res)
 	return
 }
 
@@ -323,30 +294,12 @@ ONVIF compliant devices are recommended to support password length of at least 2
 as clients may follow the password derivation mechanism which results in 'password
 equivalent' of length 28 bytes, as described in section 3.1.2 of the ONVIF security white paper.
  */
-func (s *DeviceService) CreateUser(username, password, userlevel, extension string) (err error) {
-	var ext *tt.UserExtension
-	if extension != "" {
-		wrapped := tt.UserExtension(extension) // Need an lvalue to take address of
-		ext = &wrapped
-	}
-
+func (s *DeviceService) CreateUser(users ...tt.User) (err error) {
 	var res tds.CreateUsersResponse
 	err = s.Client.Call(tds.CreateUsers{
-		Users: []tt.User{
-			{
-				Username: username,
-				Password: password,
-				UserLevel: tt.UserLevel(userlevel),
-				Extension: ext,
-			},
-		},
+		Users: users,
 	}, &res)
 	return
-}
-
-func (s *DeviceService) CreateUsers() (err error) {
-	return fmt.Errorf("Not implemented")
-	// TODO
 }
 
 /*
@@ -366,23 +319,10 @@ SetUser updates the settings for one or several users on a device for authentica
 The device shall support update of device users and their credentials through the SetUser command.
 Either all change requests are processed successfully or a fault message shall be returned and no change requests be processed.
 */
-func (s *DeviceService) SetUser(username, password, userlevel, extension string) (err error) {
+func (s *DeviceService) SetUser(users ...tt.User) (err error) {
 	var res tds.SetUserResponse
-	var ext *tt.UserExtension
-	if extension != "" {
-		wrapped := tt.UserExtension(extension) // Need an lvalue to take address of
-		ext = &wrapped
-	}
-
 	err = s.Client.Call(tds.SetUser{
-		Users: []tt.User{
-			{
-				Username: username,
-				Password: password,
-				UserLevel: tt.UserLevel(userlevel),
-				Extension: ext,
-			},
-		},
+		Users: users,
 	}, &res)
 	return
 }
@@ -452,7 +392,7 @@ func (s *DeviceService) GetDNS() (res tds.GetDNSResponse, err error) {
 SetDNS sets the DNS settings on a device. It shall be possible to set the device DNS
 configurations through the SetDNS command.
 */
-func (s *DeviceService) SetDNS(fromDHCP bool, searchDomain []string, ipAddress []net.IP) (res tds.SetDNSResponse, err error) {
+func (s *DeviceService) SetDNS(fromDHCP bool, searchDomain []string, ipAddresses []tt.IPAddress) (res tds.SetDNSResponse, err error) {
 	tokens := make([]xsd.Token, len(searchDomain))
 	for i := range searchDomain {
 		var normalized xsd.NormalizedString
@@ -468,12 +408,10 @@ func (s *DeviceService) SetDNS(fromDHCP bool, searchDomain []string, ipAddress [
 		tokens[i] = token
 	}
 
-	// todo convert ipAddress to proper token
-
 	err = s.Client.Call(tds.SetDNS{
 		FromDHCP: fromDHCP,
 		SearchDomain: tokens,
-		DNSManual: nil,
+		DNSManual: ipAddresses,
 	}, &res)
 	return
 }

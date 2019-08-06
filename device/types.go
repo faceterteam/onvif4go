@@ -1,6 +1,8 @@
 package device
 
 import (
+	"time"
+
 	"github.com/atagirov/onvif4go/onvif"
 	"github.com/atagirov/onvif4go/xsd"
 )
@@ -134,8 +136,66 @@ type SetSystemDateAndTime struct {
 	XMLName         string                `xml:"http://www.onvif.org/ver10/device/wsdl SetSystemDateAndTime"`
 	DateTimeType    onvif.SetDateTimeType `xml:"http://www.onvif.org/ver10/device/wsdl DateTimeType"`
 	DaylightSavings bool                  `xml:"http://www.onvif.org/ver10/device/wsdl DaylightSavings"`
-	TimeZone        onvif.TimeZone        `xml:"http://www.onvif.org/ver10/device/wsdl TimeZone"`
-	UTCDateTime     onvif.DateTime        `xml:"http://www.onvif.org/ver10/device/wsdl UTCDateTime"`
+	TimeZone        *onvif.TimeZone        `xml:"http://www.onvif.org/ver10/device/wsdl TimeZone"`
+	UTCDateTime     *onvif.DateTime        `xml:"http://www.onvif.org/ver10/device/wsdl UTCDateTime"`
+}
+
+func NewSetSystemDateAndTimeNTP(timeZone string, useDST bool) (s SetSystemDateAndTime, err error) {
+	if timeZone != "" {
+		ns, err := xsd.NewNormalizedString(timeZone)
+		if err != nil {
+			return
+		}
+
+		token, err := xsd.NewToken(ns)
+		if err != nil {
+			return
+		}
+		tz := onvif.TimeZone{TZ:token}
+		s.TimeZone = &tz
+	}
+
+	s.DaylightSavings = useDST
+
+	s.DateTimeType = onvif.SetDateTimeType("NTP")
+
+	return
+}
+
+func NewSetSystemDateAndTimeManual(datetime time.Time, timeZone string, useDST bool) (s SetSystemDateAndTime, err error) {
+	if timeZone != "" {
+		ns, err := xsd.NewNormalizedString(timeZone)
+		if err != nil {
+			return
+		}
+
+		token, err := xsd.NewToken(ns)
+		if err != nil {
+			return
+		}
+		tz := onvif.TimeZone{TZ:token}
+		s.TimeZone = &tz
+	}
+
+	dt := onvif.DateTime{
+		Time: onvif.Time{
+			Hour: datetime.Hour(),
+			Minute: datetime.Minute(),
+			Second: datetime.Second(),
+		},
+		Date: onvif.Date{
+			Day: datetime.Day(),
+			Month: int(datetime.Month()),
+			Year: datetime.Year(),
+		},
+	}
+
+	s.UTCDateTime = &dt
+	s.DaylightSavings = useDST
+
+	s.DateTimeType = onvif.SetDateTimeType("Manual")
+
+	return
 }
 
 type SetSystemDateAndTimeResponse struct {

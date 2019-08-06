@@ -1,6 +1,7 @@
 package onvif
 
 import (
+	"net"
 	"time"
 
 	"github.com/atagirov/onvif4go/xsd"
@@ -448,6 +449,28 @@ type IPAddress struct {
 	Type        IPType      `xml:"http://www.onvif.org/ver10/schema Type"`
 	IPv4Address IPv4Address `xml:"http://www.onvif.org/ver10/schema IPv4Address"`
 	IPv6Address IPv6Address `xml:"http://www.onvif.org/ver10/schema IPv6Address"`
+}
+
+func NewIPAddress(ip net.IP) (res IPAddress, err error) {
+	ns, err := xsd.NewNormalizedString(ip.String())
+	if err != nil {
+		return
+	}
+
+	token, err := xsd.NewToken(ns)
+	if err != nil {
+		return
+	}
+
+	if ip.To4() == nil {
+		res.Type = IPType("IPv6")
+		res.IPv6Address = IPv6Address(token)
+	} else {
+		res.Type = IPType("IPv4")
+		res.IPv4Address = IPv4Address(token)
+	}
+
+	return
 }
 
 type IPType xsd.String
@@ -1201,6 +1224,14 @@ type User struct {
 	Password  string         `xml:"http://www.onvif.org/ver10/schema Password"`
 	UserLevel UserLevel      `xml:"http://www.onvif.org/ver10/schema UserLevel"`
 	Extension *UserExtension `xml:"http://www.onvif.org/ver10/schema Extension"`
+}
+
+func NewUser(username, password, level string) User {
+	return User {
+		Username: username,
+		Password: password,
+		UserLevel: UserLevel(level),
+	}
 }
 
 type UserLevel xsd.String
