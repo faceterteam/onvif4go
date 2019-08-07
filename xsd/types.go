@@ -405,7 +405,7 @@ func (tp QName) NewQName(prefix, local string) QName {
 type NormalizedString String
 
 //TODO: check normalization
-func (tp NormalizedString) NewNormalizedString(data string) (NormalizedString, error) {
+func NewNormalizedString(data string) (NormalizedString, error) {
 	if strings.ContainsAny(data, "\r\n\t<>&") {
 		return NormalizedString(""), errors.New("String " + data + "  contains forbidden symbols")
 	}
@@ -414,7 +414,7 @@ func (tp NormalizedString) NewNormalizedString(data string) (NormalizedString, e
 
 type Token NormalizedString
 
-func (tp Token) NewToken(data NormalizedString) (Token, error) {
+func NewToken(data NormalizedString) (Token, error) {
 	trailing_leading_whitespaces := regexp.MustCompile(`^[\s\p{Zs}]+|[\s\p{Zs}]+$`)
 	multiple_whitespaces := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
 	//Removing trailing and leading whitespaces and multiple spaces

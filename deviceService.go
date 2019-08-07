@@ -3,6 +3,7 @@ package onvif4go
 import (
 	tds "github.com/atagirov/onvif4go/device"
 	tt "github.com/atagirov/onvif4go/onvif"
+	"github.com/atagirov/onvif4go/xsd"
 )
 
 type DeviceService struct {
@@ -107,351 +108,390 @@ func (s *DeviceService) GetNetworkProtocols() (res tds.GetNetworkProtocolsRespon
 }
 
 /*
-<wsdl:operation name="SetSystemDateAndTime">
-	<wsdl:documentation>This operation sets the device system date and time. The device shall support the
-		configuration of the daylight saving setting and of the manual system date and time (if
-		applicable) or indication of NTP time (if applicable) through the SetSystemDateAndTime
-		command. <br/>
-		If system time and date are set manually, the client shall include UTCDateTime in the request.<br/>
-		A TimeZone token which is not formed according to the rules of IEEE 1003.1 section 8.3 is considered as invalid timezone.<br/>
-		The DayLightSavings flag should be set to true to activate any DST settings of the TimeZone string.
-		Clear the DayLightSavings flag if the DST portion of the TimeZone settings should be ignored.
-	</wsdl:documentation>
-	<wsdl:input message="tds:SetSystemDateAndTimeRequest"/>
-	<wsdl:output message="tds:SetSystemDateAndTimeResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetSystemFactoryDefault">
-	<wsdl:documentation>This operation reloads the parameters on the device to their factory default values.</wsdl:documentation>
-	<wsdl:input message="tds:SetSystemFactoryDefaultRequest"/>
-	<wsdl:output message="tds:SetSystemFactoryDefaultResponse"/>
-</wsdl:operation>
-<wsdl:operation name="UpgradeSystemFirmware">
-	<wsdl:documentation>This operation upgrades a device firmware version. After a successful upgrade the response
-		message is sent before the device reboots. The device should support firmware upgrade
-		through the UpgradeSystemFirmware command. The exact format of the firmware data is
-		outside the scope of this standard.</wsdl:documentation>
-	<wsdl:input message="tds:UpgradeSystemFirmwareRequest"/>
-	<wsdl:output message="tds:UpgradeSystemFirmwareResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SystemReboot">
-	<wsdl:documentation>This operation reboots the device.</wsdl:documentation>
-	<wsdl:input message="tds:SystemRebootRequest"/>
-	<wsdl:output message="tds:SystemRebootResponse"/>
-</wsdl:operation>
-<wsdl:operation name="RestoreSystem">
-	<wsdl:documentation>This operation restores the system backup configuration files(s) previously retrieved from a
-		device. The device should support restore of backup configuration file(s) through the
-		RestoreSystem command. The exact format of the backup configuration file(s) is outside the
-		scope of this standard. If the command is supported, it shall accept backup files returned by
-		the GetSystemBackup command.</wsdl:documentation>
-	<wsdl:input message="tds:RestoreSystemRequest"/>
-	<wsdl:output message="tds:RestoreSystemResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetSystemBackup">
-	<wsdl:documentation>This operation is retrieves system backup configuration file(s) from a device. The device
-		should support return of back up configuration file(s) through the GetSystemBackup command.
-		The backup is returned with reference to a name and mime-type together with binary data.
-		The exact format of the backup configuration files is outside the scope of this standard.</wsdl:documentation>
-	<wsdl:input message="tds:GetSystemBackupRequest"/>
-	<wsdl:output message="tds:GetSystemBackupResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetSystemLog">
-	<wsdl:documentation>This operation gets a system log from the device. The exact format of the system logs is outside the scope of this standard.</wsdl:documentation>
-	<wsdl:input message="tds:GetSystemLogRequest"/>
-	<wsdl:output message="tds:GetSystemLogResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetSystemSupportInformation">
-	<wsdl:documentation>This operation gets arbitary device diagnostics information from the device.</wsdl:documentation>
-	<wsdl:input message="tds:GetSystemSupportInformationRequest"/>
-	<wsdl:output message="tds:GetSystemSupportInformationResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetScopes">
-	<wsdl:documentation>This operation sets the scope parameters of a device. The scope parameters are used in the
-		device discovery to match a probe message.
-		This operation replaces all existing configurable scope parameters (not fixed parameters). If
-		this shall be avoided, one should use the scope add command instead. The device shall
-		support configuration of discovery scope parameters through the SetScopes command.</wsdl:documentation>
-	<wsdl:input message="tds:SetScopesRequest"/>
-	<wsdl:output message="tds:SetScopesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="AddScopes">
-	<wsdl:documentation>This operation adds new configurable scope parameters to a device. The scope parameters
-		are used in the device discovery to match a probe message. The device shall
-		support addition of discovery scope parameters through the AddScopes command.</wsdl:documentation>
-	<wsdl:input message="tds:AddScopesRequest"/>
-	<wsdl:output message="tds:AddScopesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="RemoveScopes">
-	<wsdl:documentation>This operation deletes scope-configurable scope parameters from a device. The scope
-		parameters are used in the device discovery to match a probe message, see Section 7. The
-		device shall support deletion of discovery scope parameters through the RemoveScopes
-		command.
-		Table</wsdl:documentation>
-	<wsdl:input message="tds:RemoveScopesRequest"/>
-	<wsdl:output message="tds:RemoveScopesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetDiscoveryMode">
-	<wsdl:documentation>This operation gets the discovery mode of a device. See Section 7.2 for the definition of the
-		different device discovery modes. The device shall support retrieval of the discovery mode
-		setting through the GetDiscoveryMode command.</wsdl:documentation>
-	<wsdl:input message="tds:GetDiscoveryModeRequest"/>
-	<wsdl:output message="tds:GetDiscoveryModeResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetDiscoveryMode">
-	<wsdl:documentation>This operation sets the discovery mode operation of a device. See Section 7.2 for the
-		definition of the different device discovery modes. The device shall support configuration of
-		the discovery mode setting through the SetDiscoveryMode command.</wsdl:documentation>
-	<wsdl:input message="tds:SetDiscoveryModeRequest"/>
-	<wsdl:output message="tds:SetDiscoveryModeResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetRemoteDiscoveryMode">
-	<wsdl:documentation>This operation gets the remote discovery mode of a device. See Section 7.4 for the definition
-		of remote discovery extensions. A device that supports remote discovery shall support
-		retrieval of the remote discovery mode setting through the GetRemoteDiscoveryMode
-		command.</wsdl:documentation>
-	<wsdl:input message="tds:GetRemoteDiscoveryModeRequest"/>
-	<wsdl:output message="tds:GetRemoteDiscoveryModeResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetRemoteDiscoveryMode">
-	<wsdl:documentation>This operation sets the remote discovery mode of operation of a device. See Section 7.4 for
-		the definition of remote discovery remote extensions. A device that supports remote discovery
-		shall support configuration of the discovery mode setting through the
-		SetRemoteDiscoveryMode command.</wsdl:documentation>
-	<wsdl:input message="tds:SetRemoteDiscoveryModeRequest"/>
-	<wsdl:output message="tds:SetRemoteDiscoveryModeResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetDPAddresses">
-	<wsdl:documentation>This operation gets the remote DP address or addresses from a device. If the device supports
-		remote discovery, as specified in Section 7.4, the device shall support retrieval of the remote
-		DP address(es) through the GetDPAddresses command.</wsdl:documentation>
-	<wsdl:input message="tds:GetDPAddressesRequest"/>
-	<wsdl:output message="tds:GetDPAddressesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetDPAddresses">
-	<wsdl:documentation>This operation sets the remote DP address or addresses on a device. If the device supports
-		remote discovery, as specified in Section 7.4, the device shall support configuration of the
-		remote DP address(es) through the SetDPAddresses command.</wsdl:documentation>
-	<wsdl:input message="tds:SetDPAddressesRequest"/>
-	<wsdl:output message="tds:SetDPAddressesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetEndpointReference">
-	<wsdl:documentation>A client can ask for the device service endpoint reference address property that can be used
-		to derive the password equivalent for remote user operation. The device shall support the
-		GetEndpointReference command returning the address property of the device service
-		endpoint reference.</wsdl:documentation>
-	<wsdl:input message="tds:GetEndpointReferenceRequest"/>
-	<wsdl:output message="tds:GetEndpointReferenceResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetRemoteUser">
-	<wsdl:documentation>This operation returns the configured remote user (if any). A device supporting remote user
-		handling shall support this operation. The user is only valid for the WS-UserToken profile or
-		as a HTTP / RTSP user.<br/>
-		The algorithm to use for deriving the password is described in section 5.12.2.1 of the core specification.</wsdl:documentation>
-	<wsdl:input message="tds:GetRemoteUserRequest"/>
-	<wsdl:output message="tds:GetRemoteUserResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetRemoteUser">
-	<wsdl:documentation>This operation sets the remote user. A device supporting remote user handling shall support this
-		operation. The user is only valid for the WS-UserToken profile or as a HTTP / RTSP user.<br/>
-		The password that is set shall always be the original (not derived) password.<br/>
-		If UseDerivedPassword is set password derivation shall be done by the device when connecting to a
-		remote device.The algorithm to use for deriving the password is described in section 5.12.2.1 of the core specification.<br/>
-		To remove the remote user SetRemoteUser should be called without the RemoteUser parameter.</wsdl:documentation>
-	<wsdl:input message="tds:SetRemoteUserRequest"/>
-	<wsdl:output message="tds:SetRemoteUserResponse"/>
-</wsdl:operation>
-<wsdl:operation name="CreateUsers">
-	<wsdl:documentation>This operation creates new device users and corresponding credentials on a device for authentication purposes.
-		The device shall support creation of device users and their credentials through the CreateUsers
-		command. Either all users are created successfully or a fault message shall be returned
-		without creating any user.<br/>
-		ONVIF compliant devices are recommended to support password length of at least 28 bytes,
-		as clients may follow the password derivation mechanism which results in 'password
-		equivalent' of length 28 bytes, as described in section 3.1.2 of the ONVIF security white paper.</wsdl:documentation>
-	<wsdl:input message="tds:CreateUsersRequest"/>
-	<wsdl:output message="tds:CreateUsersResponse"/>
-</wsdl:operation>
-<wsdl:operation name="DeleteUsers">
-	<wsdl:documentation>This operation deletes users on a device. The device shall support deletion of device users and their credentials
-		through the DeleteUsers command. A device may have one or more fixed users
-		that cannot be deleted to ensure access to the unit. Either all users are deleted successfully or a
-		fault message shall be returned and no users be deleted.</wsdl:documentation>
-	<wsdl:input message="tds:DeleteUsersRequest"/>
-	<wsdl:output message="tds:DeleteUsersResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetUser">
-	<wsdl:documentation>This operation updates the settings for one or several users on a device for authentication purposes.
-		The device shall support update of device users and their credentials through the SetUser command.
-		Either all change requests are processed successfully or a fault message shall be returned and no change requests be processed.</wsdl:documentation>
-	<wsdl:input message="tds:SetUserRequest"/>
-	<wsdl:output message="tds:SetUserResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetWsdlUrl">
-	<wsdl:documentation>It is possible for an endpoint to request a URL that can be used to retrieve the complete
-		schema and WSDL definitions of a device. The command gives in return a URL entry point
-		where all the necessary product specific WSDL and schema definitions can be retrieved. The
-		device shall provide a URL for WSDL and schema download through the GetWsdlUrl command.</wsdl:documentation>
-	<wsdl:input message="tds:GetWsdlUrlRequest"/>
-	<wsdl:output message="tds:GetWsdlUrlResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetHostname">
-	<wsdl:documentation>This operation is used by an endpoint to get the hostname from a device. The device shall
-		return its hostname configurations through the GetHostname command.</wsdl:documentation>
-	<wsdl:input message="tds:GetHostnameRequest"/>
-	<wsdl:output message="tds:GetHostnameResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetHostname">
-	<wsdl:documentation>This operation sets the hostname on a device. It shall be possible to set the device hostname
-		configurations through the SetHostname command.<br/>
-		A device shall accept string formated according to RFC 1123 section 2.1 or alternatively to RFC 952,
-		other string shall be considered as invalid strings.
-	</wsdl:documentation>
-	<wsdl:input message="tds:SetHostnameRequest"/>
-	<wsdl:output message="tds:SetHostnameResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetHostnameFromDHCP">
-	<wsdl:documentation>This operation controls whether the hostname is set manually or retrieved via DHCP.</wsdl:documentation>
-	<wsdl:input message="tds:SetHostnameFromDHCPRequest"/>
-	<wsdl:output message="tds:SetHostnameFromDHCPResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetDNS">
-	<wsdl:documentation>This operation gets the DNS settings from a device. The device shall return its DNS
-		configurations through the GetDNS command.</wsdl:documentation>
-	<wsdl:input message="tds:GetDNSRequest"/>
-	<wsdl:output message="tds:GetDNSResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetDNS">
-	<wsdl:documentation>This operation sets the DNS settings on a device. It shall be possible to set the device DNS
-		configurations through the SetDNS command.</wsdl:documentation>
-	<wsdl:input message="tds:SetDNSRequest"/>
-	<wsdl:output message="tds:SetDNSResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetNTP">
-	<wsdl:documentation>This operation gets the NTP settings from a device. If the device supports NTP, it shall be
-		possible to get the NTP server settings through the GetNTP command.</wsdl:documentation>
-	<wsdl:input message="tds:GetNTPRequest"/>
-	<wsdl:output message="tds:GetNTPResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetNTP">
-	<wsdl:documentation>This operation sets the NTP settings on a device. If the device supports NTP, it shall be
-		possible to set the NTP server settings through the SetNTP command.<br/>
-		A device shall accept string formated according to RFC 1123 section 2.1 or alternatively to RFC 952,
-		other string shall be considered as invalid strings. <br/>
-		Changes to the NTP server list will not affect the clock mode DateTimeType. Use SetSystemDateAndTime to activate NTP operation.
-	</wsdl:documentation>
-	<wsdl:input message="tds:SetNTPRequest"/>
-	<wsdl:output message="tds:SetNTPResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetDynamicDNS">
-	<wsdl:documentation>This operation gets the dynamic DNS settings from a device. If the device supports dynamic
-		DNS as specified in [RFC 2136] and [RFC 4702], it shall be possible to get the type, name
-		and TTL through the GetDynamicDNS command.</wsdl:documentation>
-	<wsdl:input message="tds:GetDynamicDNSRequest"/>
-	<wsdl:output message="tds:GetDynamicDNSResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetDynamicDNS">
-	<wsdl:documentation>This operation sets the dynamic DNS settings on a device. If the device supports dynamic
-		DNS as specified in [RFC 2136] and [RFC 4702], it shall be possible to set the type, name
-		and TTL through the SetDynamicDNS command.</wsdl:documentation>
-	<wsdl:input message="tds:SetDynamicDNSRequest"/>
-	<wsdl:output message="tds:SetDynamicDNSResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetNetworkInterfaces">
-	<wsdl:documentation>This operation gets the network interface configuration from a device. The device shall
-		support return of network interface configuration settings as defined by the NetworkInterface
-		type through the GetNetworkInterfaces command.</wsdl:documentation>
-	<wsdl:input message="tds:GetNetworkInterfacesRequest"/>
-	<wsdl:output message="tds:GetNetworkInterfacesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetNetworkInterfaces">
-	<wsdl:documentation>This operation sets the network interface configuration on a device. The device shall support
-		network configuration of supported network interfaces through the SetNetworkInterfaces
-		command.<br/>
-		For interoperability with a client unaware of the IEEE 802.11 extension a device shall retain
-		its IEEE 802.11 configuration if the IEEE 802.11 configuration element isn’t present in the
-		request.</wsdl:documentation>
-	<wsdl:input message="tds:SetNetworkInterfacesRequest"/>
-	<wsdl:output message="tds:SetNetworkInterfacesResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetNetworkProtocols">
-	<wsdl:documentation>This operation configures defined network protocols on a device. The device shall support
-		configuration of defined network protocols through the SetNetworkProtocols command.</wsdl:documentation>
-	<wsdl:input message="tds:SetNetworkProtocolsRequest"/>
-	<wsdl:output message="tds:SetNetworkProtocolsResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetNetworkDefaultGateway">
-	<wsdl:documentation>This operation gets the default gateway settings from a device. The device shall support the
-		GetNetworkDefaultGateway command returning configured default gateway address(es).</wsdl:documentation>
-	<wsdl:input message="tds:GetNetworkDefaultGatewayRequest"/>
-	<wsdl:output message="tds:GetNetworkDefaultGatewayResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetNetworkDefaultGateway">
-	<wsdl:documentation>This operation sets the default gateway settings on a device. The device shall support
-		configuration of default gateway through the SetNetworkDefaultGateway command.</wsdl:documentation>
-	<wsdl:input message="tds:SetNetworkDefaultGatewayRequest"/>
-	<wsdl:output message="tds:SetNetworkDefaultGatewayResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetZeroConfiguration">
-	<wsdl:documentation>This operation gets the zero-configuration from a device. If the device supports dynamic IP
-		configuration according to [RFC3927], it shall support the return of IPv4 zero configuration
-		address and status through the GetZeroConfiguration command.<br/>
-	Devices supporting zero configuration on more than one interface shall use the extension to list the additional interface settings.</wsdl:documentation>
-	<wsdl:input message="tds:GetZeroConfigurationRequest"/>
-	<wsdl:output message="tds:GetZeroConfigurationResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetZeroConfiguration">
-	<wsdl:documentation>This operation sets the zero-configuration. Use GetCapalities to get if zero-zero-configuration is supported or not.</wsdl:documentation>
-	<wsdl:input message="tds:SetZeroConfigurationRequest"/>
-	<wsdl:output message="tds:SetZeroConfigurationResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetIPAddressFilter">
-	<wsdl:documentation>This operation gets the IP address filter settings from a device. If the device supports device
-		access control based on IP filtering rules (denied or accepted ranges of IP addresses), the
-		device shall support the GetIPAddressFilter command.</wsdl:documentation>
-	<wsdl:input message="tds:GetIPAddressFilterRequest"/>
-	<wsdl:output message="tds:GetIPAddressFilterResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetIPAddressFilter">
-	<wsdl:documentation>This operation sets the IP address filter settings on a device. If the device supports device
-		access control based on IP filtering rules (denied or accepted ranges of IP addresses), the
-		device shall support configuration of IP filtering rules through the SetIPAddressFilter
-		command.</wsdl:documentation>
-	<wsdl:input message="tds:SetIPAddressFilterRequest"/>
-	<wsdl:output message="tds:SetIPAddressFilterResponse"/>
-</wsdl:operation>
-<wsdl:operation name="AddIPAddressFilter">
-	<wsdl:documentation>This operation adds an IP filter address to a device. If the device supports device access
-		control based on IP filtering rules (denied or accepted ranges of IP addresses), the device
-		shall support adding of IP filtering addresses through the AddIPAddressFilter command.</wsdl:documentation>
-	<wsdl:input message="tds:AddIPAddressFilterRequest"/>
-	<wsdl:output message="tds:AddIPAddressFilterResponse"/>
-</wsdl:operation>
-<wsdl:operation name="RemoveIPAddressFilter">
-	<wsdl:documentation>This operation deletes an IP filter address from a device. If the device supports device access
-		control based on IP filtering rules (denied or accepted ranges of IP addresses), the device
-		shall support deletion of IP filtering addresses through the RemoveIPAddressFilter command.</wsdl:documentation>
-	<wsdl:input message="tds:RemoveIPAddressFilterRequest"/>
-	<wsdl:output message="tds:RemoveIPAddressFilterResponse"/>
-</wsdl:operation>
-<wsdl:operation name="GetAccessPolicy">
-	<wsdl:documentation>Access to different services and sub-sets of services should be subject to access control. The
-		WS-Security framework gives the prerequisite for end-point authentication. Authorization
-		decisions can then be taken using an access security policy. This standard does not mandate
-		any particular policy description format or security policy but this is up to the device
-		manufacturer or system provider to choose policy and policy description format of choice.
-		However, an access policy (in arbitrary format) can be requested using this command. If the
-		device supports access policy settings based on WS-Security authentication, then the device
-		shall support this command.</wsdl:documentation>
-	<wsdl:input message="tds:GetAccessPolicyRequest"/>
-	<wsdl:output message="tds:GetAccessPolicyResponse"/>
-</wsdl:operation>
-<wsdl:operation name="SetAccessPolicy">
-	<wsdl:documentation>This command sets the device access security policy (for more details on the access security
-		policy see the Get command). If the device supports access policy settings
-		based on WS-Security authentication, then the device shall support this command.</wsdl:documentation>
-	<wsdl:input message="tds:SetAccessPolicyRequest"/>
-	<wsdl:output message="tds:SetAccessPolicyResponse"/>
-</wsdl:operation>
+SetSystemDateAndTime sets the device system date and time.
+The device shall support the configuration of the daylight saving setting and of the manual system date and time
+(if applicable) or indication of NTP time (if applicable) through the SetSystemDateAndTime command.
+*/
+func (s *DeviceService) SetSystemDateAndTime(req tds.SetSystemDateAndTime) (err error) {
+	var res tds.SetSystemDateAndTimeResponse
+	err = s.Client.Call(req, &res)
+	return
+}
+
+/*
+SystemReboot reboots the device.
+*/
+func (s *DeviceService) SystemReboot() (res tds.SystemRebootResponse, err error) {
+	err = s.Client.Call(tds.SystemReboot{}, &res)
+	return
+}
+
+/*
+GetSystemLog gets a system log from the device.
+The exact format of the system logs is outside the scope of this standard.
+*/
+func (s *DeviceService) GetSystemLog(logType string) (res tds.GetSystemLogResponse, err error) {
+	err = s.Client.Call(tds.GetSystemLog{LogType: tt.SystemLogType(logType)}, &res)
+	return
+}
+
+/*
+GetSystemSupportInformation gets arbitary device diagnostics information from the device.
+*/
+func (s *DeviceService) GetSystemSupportInformation() (res tds.GetSystemSupportInformationResponse, err error) {
+	err = s.Client.Call(tds.GetSystemSupportInformation{}, &res)
+	return
+}
+
+/*
+SetScopes sets the scope parameters of a device. The scope parameters are used in the device discovery to match a probe message.
+This operation replaces all existing configurable scope parameters (not fixed parameters). If
+this shall be avoided, one should use the scope add command instead. The device shall
+support configuration of discovery scope parameters through the SetScopes command.
+*/
+func (s *DeviceService) SetScopes(scopeURIs []string) (err error) {
+	var res tds.SetScopesResponse
+	scopes := make([]xsd.AnyURI, len(scopeURIs))
+	for i := range scopeURIs {
+		scopes[i] = xsd.AnyURI(scopeURIs[i])
+	}
+
+	err = s.Client.Call(tds.SetScopes{Scopes: scopes}, &res)
+	return
+}
+
+/*
+AddScopes adds new configurable scope parameters to a device. The scope parameters
+are used in the device discovery to match a probe message. The device shall
+support addition of discovery scope parameters through the AddScopes command.
+*/
+func (s *DeviceService) AddScopes(scopeURIs []string) (err error) {
+	var res tds.AddScopesResponse
+	scopes := make([]xsd.AnyURI, len(scopeURIs))
+	for i := range scopeURIs {
+		scopes[i] = xsd.AnyURI(scopeURIs[i])
+	}
+
+	err = s.Client.Call(tds.AddScopes{ScopeItem: scopes}, &res)
+	return
+}
+
+/*
+RemoveScopes deletes scope-configurable scope parameters from a device. The scope
+parameters are used in the device discovery to match a probe message, see Section 7. The
+device shall support deletion of discovery scope parameters through the RemoveScopes
+command.
+*/
+func (s *DeviceService) RemoveScopes(scopeURIs []string) (res tds.RemoveScopesResponse, err error) {
+	scopes := make([]xsd.AnyURI, len(scopeURIs))
+	for i := range scopeURIs {
+		scopes[i] = xsd.AnyURI(scopeURIs[i])
+	}
+
+	err = s.Client.Call(tds.RemoveScopes{ScopeItem: scopes}, &res)
+	return
+}
+
+/*
+GetDiscoveryMode gets the discovery mode of a device. See Section 7.2 for the definition of the
+different device discovery modes. The device shall support retrieval of the discovery mode
+setting through the GetDiscoveryMode command.
+*/
+func (s *DeviceService) GetDiscoveryMode() (res tds.GetDiscoveryModeResponse, err error) {
+	err = s.Client.Call(tds.GetDiscoveryMode{}, &res)
+	return
+}
+
+/*
+SetDiscoveryMode sets the discovery mode operation of a device. See Section 7.2 for the
+definition of the different device discovery modes. The device shall support configuration of
+the discovery mode setting through the SetDiscoveryMode command.
+*/
+func (s *DeviceService) SetDiscoveryMode(discoveryMode string) (err error) {
+	var res tds.SetDiscoveryModeResponse
+	err = s.Client.Call(tds.SetDiscoveryMode{DiscoveryMode: tt.DiscoveryMode(discoveryMode)}, &res)
+	return
+}
+
+/*
+GetRemoteDiscoveryMode gets the remote discovery mode of a device. See Section 7.4 for the definition
+of remote discovery extensions. A device that supports remote discovery shall support
+retrieval of the remote discovery mode setting through the GetRemoteDiscoveryMode command.
+*/
+func (s *DeviceService) GetRemoteDiscoveryMode() (res tds.GetRemoteDiscoveryModeResponse, err error) {
+	err = s.Client.Call(tds.GetRemoteDiscoveryMode{}, &res)
+	return
+}
+
+/*
+SetRemoteDiscoveryMode sets the remote discovery mode of operation of a device. See Section 7.4 for
+the definition of remote discovery remote extensions. A device that supports remote discovery
+shall support configuration of the discovery mode setting through the
+SetRemoteDiscoveryMode command.
+*/
+func (s *DeviceService) SetRemoteDiscoveryMode(remoteDiscoveryMode string) (err error) {
+	var res tds.SetRemoteDiscoveryModeResponse
+	err = s.Client.Call(tds.SetRemoteDiscoveryMode{RemoteDiscoveryMode: tt.DiscoveryMode(remoteDiscoveryMode)}, &res)
+	return
+}
+
+/*
+GetDPAddresses gets the remote DP address or addresses from a device. If the device supports
+remote discovery, as specified in Section 7.4, the device shall support retrieval of the remote
+DP address(es) through the GetDPAddresses command.
+*/
+func (s *DeviceService) GetDPAddresses() (res tds.GetDPAddressesResponse, err error) {
+	err = s.Client.Call(tds.GetDPAddresses{}, &res)
+	return
+}
+
+/*
+GetEndpointReference -- A client can ask for the device service endpoint reference address property that can be used
+to derive the password equivalent for remote user operation. The device shall support the
+GetEndpointReference command returning the address property of the device service
+endpoint reference.
+*/
+func (s *DeviceService) GetEndpointReference() (res tds.GetEndpointReferenceResponse, err error) {
+	err = s.Client.Call(tds.GetEndpointReference{}, &res)
+	return
+}
+
+/*
+GetRemoteUser returns the configured remote user (if any). A device supporting remote user
+handling shall support this operation. The user is only valid for the WS-UserToken profile or
+as a HTTP / RTSP user.
+
+The algorithm to use for deriving the password is described in section 5.12.2.1 of the core specification.
+*/
+func (s *DeviceService) GetRemoteUser() (res tds.GetRemoteUserResponse, err error) {
+	err = s.Client.Call(tds.GetRemoteUser{}, &res)
+	return
+}
+
+/*
+SetRemoteUser sets the remote user. A device supporting remote user handling shall support this
+operation. The user is only valid for the WS-UserToken profile or as a HTTP / RTSP user.<br/>
+The password that is set shall always be the original (not derived) password.
+
+If UseDerivedPassword is set password derivation shall be done by the device when connecting to a
+remote device.The algorithm to use for deriving the password is described in section 5.12.2.1 of the core specification.
+
+To remove the remote user SetRemoteUser should be called without the RemoteUser parameter.
+*/
+func (s *DeviceService) SetRemoteUser(remoteUser *tt.RemoteUser) (err error) {
+	var res tds.SetRemoteUserResponse
+	err = s.Client.Call(tds.SetRemoteUser{RemoteUser: remoteUser}, &res)
+	return
+}
+
+/*
+CreateUsers creates new device users and corresponding credentials on a device for authentication purposes.
+The device shall support creation of device users and their credentials through the CreateUsers
+command. Either all users are created successfully or a fault message shall be returned
+without creating any user.
+
+ONVIF compliant devices are recommended to support password length of at least 28 bytes,
+as clients may follow the password derivation mechanism which results in 'password
+equivalent' of length 28 bytes, as described in section 3.1.2 of the ONVIF security white paper.
+ */
+func (s *DeviceService) CreateUser(users ...tt.User) (err error) {
+	var res tds.CreateUsersResponse
+	err = s.Client.Call(tds.CreateUsers{
+		Users: users,
+	}, &res)
+	return
+}
+
+/*
+DeleteUsers deletes users on a device. The device shall support deletion of device users and their credentials
+through the DeleteUsers command. A device may have one or more fixed users
+that cannot be deleted to ensure access to the unit. Either all users are deleted successfully or a
+fault message shall be returned and no users be deleted.
+*/
+func (s *DeviceService) DeleteUsers(usernames []string) (err error) {
+	var res tds.DeleteUsersResponse
+	err = s.Client.Call(tds.DeleteUsers{Usernames: usernames}, &res)
+	return
+}
+
+/*
+SetUser updates the settings for one or several users on a device for authentication purposes.
+The device shall support update of device users and their credentials through the SetUser command.
+Either all change requests are processed successfully or a fault message shall be returned and no change requests be processed.
+*/
+func (s *DeviceService) SetUser(users ...tt.User) (err error) {
+	var res tds.SetUserResponse
+	err = s.Client.Call(tds.SetUser{
+		Users: users,
+	}, &res)
+	return
+}
+
+/*
+It is possible for an endpoint to request a URL that can be used to retrieve the complete
+schema and WSDL definitions of a device. The command gives in return a URL entry point
+where all the necessary product specific WSDL and schema definitions can be retrieved. The
+device shall provide a URL for WSDL and schema download through the GetWsdlUrl command.
+*/
+func (s *DeviceService) GetWsdlUrl() (res tds.GetWsdlUrlResponse, err error) {
+	err = s.Client.Call(tds.GetWsdlUrl{}, &res)
+	return
+}
+
+/*
+GetHostname is used by an endpoint to get the hostname from a device. The device shall
+return its hostname configurations through the GetHostname command.
+*/
+func (s *DeviceService) GetHostname() (res tds.GetHostnameResponse, err error) {
+	err = s.Client.Call(tds.GetHostname{}, &res)
+	return
+}
+
+/*
+SetHostname sets the hostname on a device. It shall be possible to set the device hostname
+configurations through the SetHostname command.
+
+A device shall accept string formated according to RFC 1123 section 2.1 or alternatively to RFC 952,
+other string shall be considered as invalid strings.
+*/
+func (s *DeviceService) SetHostname(hostname string) (err error) {
+	var res tds.SetHostnameResponse
+	var normalized xsd.NormalizedString
+	normalized, err = xsd.NewNormalizedString(hostname)
+	if err != nil {
+		return
+	}
+	var token xsd.Token
+	token, err = xsd.NewToken(normalized)
+	if err != nil {
+		return
+	}
+
+	err = s.Client.Call(tds.SetHostname{Name: token}, &res)
+	return
+}
+
+/*
+SetHostnameFromDHCP controls whether the hostname is set manually or retrieved via DHCP.
+*/
+func (s *DeviceService) SetHostnameFromDHCP(fromDHCP bool) (res tds.SetHostnameFromDHCP, err error) {
+	err = s.Client.Call(tds.SetHostnameFromDHCP{FromDHCP: fromDHCP}, &res)
+	return
+}
+
+/*
+GetDNS gets the DNS settings from a device. The device shall return its DNS
+configurations through the GetDNS command.
+*/
+func (s *DeviceService) GetDNS() (res tds.GetDNSResponse, err error) {
+	err = s.Client.Call(tds.GetDNS{}, &res)
+	return
+}
+
+/*
+SetDNS sets the DNS settings on a device. It shall be possible to set the device DNS
+configurations through the SetDNS command.
+*/
+func (s *DeviceService) SetDNS(fromDHCP bool, searchDomain []string, ipAddresses []tt.IPAddress) (res tds.SetDNSResponse, err error) {
+	tokens := make([]xsd.Token, len(searchDomain))
+	for i := range searchDomain {
+		var normalized xsd.NormalizedString
+		normalized, err = xsd.NewNormalizedString(searchDomain[i])
+		if err != nil {
+			return
+		}
+		var token xsd.Token
+		token, err = xsd.NewToken(normalized)
+		if err != nil {
+			return
+		}
+		tokens[i] = token
+	}
+
+	err = s.Client.Call(tds.SetDNS{
+		FromDHCP: fromDHCP,
+		SearchDomain: tokens,
+		DNSManual: ipAddresses,
+	}, &res)
+	return
+}
+
+/*
+GetNTP gets the NTP settings from a device. If the device supports NTP, it shall be
+possible to get the NTP server settings through the GetNTP command.
+*/
+func (s *DeviceService) GetNTP() (res tds.GetNTPResponse, err error) {
+	err = s.Client.Call(tds.GetNTP{}, &res)
+	return
+}
+
+/*
+GetDynamicDNS gets the dynamic DNS settings from a device. If the device supports dynamic
+DNS as specified in [RFC 2136] and [RFC 4702], it shall be possible to get the type, name
+and TTL through the GetDynamicDNS command.
+*/
+func (s *DeviceService) GetDynamicDNS() (res tds.GetDynamicDNSResponse, err error) {
+	err = s.Client.Call(tds.GetDynamicDNS{}, &res)
+	return
+}
+
+/*
+GetNetworkInterfaces gets the network interface configuration from a device. The device shall
+support return of network interface configuration settings as defined by the NetworkInterface
+type through the GetNetworkInterfaces command.
+*/
+func (s *DeviceService) GetNetworkInterfaces() (res tds.GetNetworkInterfacesResponse, err error) {
+	err = s.Client.Call(tds.GetNetworkInterfaces{}, &res)
+	return
+}
+
+/*
+GetNetworkDefaultGateway gets the default gateway settings from a device. The device shall support the
+GetNetworkDefaultGateway command returning configured default gateway address(es).
+*/
+func (s *DeviceService) GetNetworkDefaultGateway() (res tds.GetNetworkDefaultGatewayResponse, err error) {
+	err = s.Client.Call(tds.GetNetworkDefaultGateway{}, &res)
+	return
+}
+
+/*
+GetZeroConfiguration gets the zero-configuration from a device. If the device supports dynamic IP
+configuration according to [RFC3927], it shall support the return of IPv4 zero configuration
+address and status through the GetZeroConfiguration command.
+*/
+func (s *DeviceService) GetZeroConfiguration() (res tds.GetZeroConfigurationResponse, err error) {
+	err = s.Client.Call(tds.GetZeroConfiguration{}, &res)
+	return
+}
+
+/*
+GetIPAddressFilter gets the IP address filter settings from a device. If the device supports device
+access control based on IP filtering rules (denied or accepted ranges of IP addresses), the
+device shall support the GetIPAddressFilter command.
+*/
+func (s *DeviceService) GetIPAddressFilter() (res tds.GetIPAddressFilterResponse, err error) {
+	err = s.Client.Call(tds.GetIPAddressFilter{}, &res)
+	return
+}
+
+/*
+GetAccessPolicy -- Access to different services and sub-sets of services should be subject to access control. The
+WS-Security framework gives the prerequisite for end-point authentication. Authorization
+decisions can then be taken using an access security policy. This standard does not mandate
+any particular policy description format or security policy but this is up to the device
+manufacturer or system provider to choose policy and policy description format of choice.
+However, an access policy (in arbitrary format) can be requested using this command. If the
+device supports access policy settings based on WS-Security authentication, then the device
+shall support this command.
+*/
+func (s *DeviceService) GetAccessPolicy() (res tds.GetAccessPolicyResponse, err error) {
+	err = s.Client.Call(tds.GetAccessPolicy{}, &res)
+	// todo convert binary data to []byte?
+	return
+}
+
+
+/*
 <wsdl:operation name="CreateCertificate">
 	<wsdl:documentation>This operation generates a private/public key pair and also can create a self-signed device
 		certificate as a result of key pair generation. The certificate is created using a suitable
@@ -806,5 +846,115 @@ func (s *DeviceService) GetNetworkProtocols() (res tds.GetNetworkProtocolsRespon
 	</wsdl:documentation>
 	<wsdl:input message="tds:DeleteGeoLocationRequest"/>
 	<wsdl:output message="tds:DeleteGeoLocationResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetSystemFactoryDefault">
+	<wsdl:documentation>This operation reloads the parameters on the device to their factory default values.</wsdl:documentation>
+	<wsdl:input message="tds:SetSystemFactoryDefaultRequest"/>
+	<wsdl:output message="tds:SetSystemFactoryDefaultResponse"/>
+</wsdl:operation>
+<wsdl:operation name="UpgradeSystemFirmware">
+	<wsdl:documentation>This operation upgrades a device firmware version. After a successful upgrade the response
+		message is sent before the device reboots. The device should support firmware upgrade
+		through the UpgradeSystemFirmware command. The exact format of the firmware data is
+		outside the scope of this standard.</wsdl:documentation>
+	<wsdl:input message="tds:UpgradeSystemFirmwareRequest"/>
+	<wsdl:output message="tds:UpgradeSystemFirmwareResponse"/>
+</wsdl:operation>
+<wsdl:operation name="RestoreSystem">
+	<wsdl:documentation>This operation restores the system backup configuration files(s) previously retrieved from a
+		device. The device should support restore of backup configuration file(s) through the
+		RestoreSystem command. The exact format of the backup configuration file(s) is outside the
+		scope of this standard. If the command is supported, it shall accept backup files returned by
+		the GetSystemBackup command.</wsdl:documentation>
+	<wsdl:input message="tds:RestoreSystemRequest"/>
+	<wsdl:output message="tds:RestoreSystemResponse"/>
+</wsdl:operation>
+<wsdl:operation name="GetSystemBackup">
+	<wsdl:documentation>This operation is retrieves system backup configuration file(s) from a device. The device
+		should support return of back up configuration file(s) through the GetSystemBackup command.
+		The backup is returned with reference to a name and mime-type together with binary data.
+		The exact format of the backup configuration files is outside the scope of this standard.</wsdl:documentation>
+	<wsdl:input message="tds:GetSystemBackupRequest"/>
+	<wsdl:output message="tds:GetSystemBackupResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetDPAddresses">
+	<wsdl:documentation>This operation sets the remote DP address or addresses on a device. If the device supports
+		remote discovery, as specified in Section 7.4, the device shall support configuration of the
+		remote DP address(es) through the SetDPAddresses command.</wsdl:documentation>
+	<wsdl:input message="tds:SetDPAddressesRequest"/>
+	<wsdl:output message="tds:SetDPAddressesResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetNTP">
+	<wsdl:documentation>This operation sets the NTP settings on a device. If the device supports NTP, it shall be
+		possible to set the NTP server settings through the SetNTP command.<br/>
+		A device shall accept string formated according to RFC 1123 section 2.1 or alternatively to RFC 952,
+		other string shall be considered as invalid strings. <br/>
+		Changes to the NTP server list will not affect the clock mode DateTimeType. Use SetSystemDateAndTime to activate NTP operation.
+	</wsdl:documentation>
+	<wsdl:input message="tds:SetNTPRequest"/>
+	<wsdl:output message="tds:SetNTPResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetDynamicDNS">
+	<wsdl:documentation>This operation sets the dynamic DNS settings on a device. If the device supports dynamic
+		DNS as specified in [RFC 2136] and [RFC 4702], it shall be possible to set the type, name
+		and TTL through the SetDynamicDNS command.</wsdl:documentation>
+	<wsdl:input message="tds:SetDynamicDNSRequest"/>
+	<wsdl:output message="tds:SetDynamicDNSResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetNetworkInterfaces">
+	<wsdl:documentation>This operation sets the network interface configuration on a device. The device shall support
+		network configuration of supported network interfaces through the SetNetworkInterfaces
+		command.<br/>
+		For interoperability with a client unaware of the IEEE 802.11 extension a device shall retain
+		its IEEE 802.11 configuration if the IEEE 802.11 configuration element isn’t present in the
+		request.</wsdl:documentation>
+	<wsdl:input message="tds:SetNetworkInterfacesRequest"/>
+	<wsdl:output message="tds:SetNetworkInterfacesResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetNetworkProtocols">
+	<wsdl:documentation>This operation configures defined network protocols on a device. The device shall support
+		configuration of defined network protocols through the SetNetworkProtocols command.</wsdl:documentation>
+	<wsdl:input message="tds:SetNetworkProtocolsRequest"/>
+	<wsdl:output message="tds:SetNetworkProtocolsResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetNetworkDefaultGateway">
+	<wsdl:documentation>This operation sets the default gateway settings on a device. The device shall support
+		configuration of default gateway through the SetNetworkDefaultGateway command.</wsdl:documentation>
+	<wsdl:input message="tds:SetNetworkDefaultGatewayRequest"/>
+	<wsdl:output message="tds:SetNetworkDefaultGatewayResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetZeroConfiguration">
+	<wsdl:documentation>This operation sets the zero-configuration. Use GetCapalities to get if zero-zero-configuration is supported or not.</wsdl:documentation>
+	<wsdl:input message="tds:SetZeroConfigurationRequest"/>
+	<wsdl:output message="tds:SetZeroConfigurationResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetIPAddressFilter">
+	<wsdl:documentation>This operation sets the IP address filter settings on a device. If the device supports device
+		access control based on IP filtering rules (denied or accepted ranges of IP addresses), the
+		device shall support configuration of IP filtering rules through the SetIPAddressFilter
+		command.</wsdl:documentation>
+	<wsdl:input message="tds:SetIPAddressFilterRequest"/>
+	<wsdl:output message="tds:SetIPAddressFilterResponse"/>
+</wsdl:operation>
+<wsdl:operation name="AddIPAddressFilter">
+	<wsdl:documentation>This operation adds an IP filter address to a device. If the device supports device access
+		control based on IP filtering rules (denied or accepted ranges of IP addresses), the device
+		shall support adding of IP filtering addresses through the AddIPAddressFilter command.</wsdl:documentation>
+	<wsdl:input message="tds:AddIPAddressFilterRequest"/>
+	<wsdl:output message="tds:AddIPAddressFilterResponse"/>
+</wsdl:operation>
+<wsdl:operation name="RemoveIPAddressFilter">
+	<wsdl:documentation>This operation deletes an IP filter address from a device. If the device supports device access
+		control based on IP filtering rules (denied or accepted ranges of IP addresses), the device
+		shall support deletion of IP filtering addresses through the RemoveIPAddressFilter command.</wsdl:documentation>
+	<wsdl:input message="tds:RemoveIPAddressFilterRequest"/>
+	<wsdl:output message="tds:RemoveIPAddressFilterResponse"/>
+</wsdl:operation>
+<wsdl:operation name="SetAccessPolicy">
+	<wsdl:documentation>This command sets the device access security policy (for more details on the access security
+		policy see the Get command). If the device supports access policy settings
+		based on WS-Security authentication, then the device shall support this command.</wsdl:documentation>
+	<wsdl:input message="tds:SetAccessPolicyRequest"/>
+	<wsdl:output message="tds:SetAccessPolicyResponse"/>
 </wsdl:operation>
 */
