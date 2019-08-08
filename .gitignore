@@ -3,7 +3,6 @@
 *.DS_Store
 .project
 .vscode/
-go.sum
 coverage.out
 debug
 *.dll

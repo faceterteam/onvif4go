@@ -142,12 +142,14 @@ type SetSystemDateAndTime struct {
 
 func NewSetSystemDateAndTimeNTP(timeZone string, useDST bool) (s SetSystemDateAndTime, err error) {
 	if timeZone != "" {
-		ns, err := xsd.NewNormalizedString(timeZone)
+		var ns xsd.NormalizedString
+		ns, err = xsd.NewNormalizedString(timeZone)
 		if err != nil {
 			return
 		}
 
-		token, err := xsd.NewToken(ns)
+		var token xsd.Token
+		token, err = xsd.NewToken(ns)
 		if err != nil {
 			return
 		}
@@ -164,12 +166,14 @@ func NewSetSystemDateAndTimeNTP(timeZone string, useDST bool) (s SetSystemDateAn
 
 func NewSetSystemDateAndTimeManual(datetime time.Time, timeZone string, useDST bool) (s SetSystemDateAndTime, err error) {
 	if timeZone != "" {
-		ns, err := xsd.NewNormalizedString(timeZone)
+		var ns xsd.NormalizedString
+		ns, err = xsd.NewNormalizedString(timeZone)
 		if err != nil {
 			return
 		}
 
-		token, err := xsd.NewToken(ns)
+		var token xsd.Token
+		token, err = xsd.NewToken(ns)
 		if err != nil {
 			return
 		}
