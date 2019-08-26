@@ -31,12 +31,12 @@ err := media.Call(trt.GetProfiles{}, &response)
 ```
 
 ```
-response := onvif4go.XmlNode{}
+response := xsd.AnyType{}
 analytics, _ := device.On("analytics")
-err = analytics.Call(onvif4go.XmlNode{
+err = analytics.Call(xsd.AnyType{
     XMLName: xml.Name{"http://www.onvif.org/ver20/analytics/wsdl", "GetSupportedAnalyticsModules"},
-    Childs: []onvif4go.XmlNode{
-        onvif4go.XmlNode{
+    Childs: []xsd.AnyType{
+        xsd.AnyType{
             XMLName: xml.Name{"http://www.onvif.org/ver20/analytics/wsdl", "ConfigurationToken"},
             Text:    "VideoAnalyticsConfiguration_000",
         },
