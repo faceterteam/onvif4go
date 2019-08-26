@@ -1,7 +1,7 @@
 package onvif4go
 
 import (
-	tev "github.com/atagirov/onvif4go/events"
+	tev "github.com/faceterteam/onvif4go/events"
 )
 
 type EventsService struct {

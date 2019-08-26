@@ -1,7 +1,7 @@
 package media
 
 import (
-	"github.com/atagirov/onvif4go/onvif"
+	"github.com/faceterteam/onvif4go/onvif"
 )
 
 type Capabilities struct {

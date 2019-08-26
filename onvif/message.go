@@ -1,7 +1,7 @@
 package onvif
 
 import (
-	"github.com/atagirov/onvif4go/xsd"
+	"github.com/faceterteam/onvif4go/xsd"
 )
 
 type Message struct {

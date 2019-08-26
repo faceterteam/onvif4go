@@ -1,8 +1,8 @@
 package onvif4go
 
 import (
-	trt "github.com/atagirov/onvif4go/media"
-	tt "github.com/atagirov/onvif4go/onvif"
+	trt "github.com/faceterteam/onvif4go/media"
+	tt "github.com/faceterteam/onvif4go/onvif"
 )
 
 type MediaService struct {

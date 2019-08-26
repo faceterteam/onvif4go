@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/atagirov/onvif4go/onvif"
-	"github.com/atagirov/onvif4go/xsd"
+	"github.com/faceterteam/onvif4go/onvif"
+	"github.com/faceterteam/onvif4go/xsd"
 )
 
 type OnvifDevice struct {

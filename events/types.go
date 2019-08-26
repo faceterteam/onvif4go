@@ -3,8 +3,8 @@ package events
 import (
 	"time"
 
-	tt "github.com/atagirov/onvif4go/onvif"
-	"github.com/atagirov/onvif4go/xsd"
+	tt "github.com/faceterteam/onvif4go/onvif"
+	"github.com/faceterteam/onvif4go/xsd"
 )
 
 type FilterType string

@@ -1,9 +1,9 @@
 package onvif4go
 
 import (
-	tds "github.com/atagirov/onvif4go/device"
-	tt "github.com/atagirov/onvif4go/onvif"
-	"github.com/atagirov/onvif4go/xsd"
+	tds "github.com/faceterteam/onvif4go/device"
+	tt "github.com/faceterteam/onvif4go/onvif"
+	"github.com/faceterteam/onvif4go/xsd"
 )
 
 type DeviceService struct {
